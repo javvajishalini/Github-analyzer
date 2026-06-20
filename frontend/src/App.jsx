@@ -7,14 +7,38 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
+  
+  // Theme state: 'dark' or 'light'
+  const [theme, setTheme] = useState('dark');
 
-  // Load history from localStorage
+  // Load history and theme from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('git_analyzer_history');
-    if (saved) {
-      setHistory(JSON.parse(saved));
+    const savedHistory = localStorage.getItem('git_analyzer_history');
+    if (savedHistory) {
+      setHistory(JSON.parse(savedHistory));
+    }
+
+    const savedTheme = localStorage.getItem('git_analyzer_theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
     }
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('git_analyzer_theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
 
   const saveToHistory = (name) => {
     const cleanName = name.trim().toLowerCase();
@@ -59,7 +83,7 @@ export default function App() {
   // SVG Chart Calculations for Donut Chart
   const renderLanguageDonut = () => {
     if (!data || !data.languageDistribution || Object.keys(data.languageDistribution).length === 0) {
-      return <div className="text-gray-400">No language data available.</div>;
+      return <div style={{ color: 'var(--text-secondary)' }}>No language data available.</div>;
     }
 
     const dist = data.languageDistribution;
@@ -109,8 +133,8 @@ export default function App() {
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
           }}>
-            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{totalRepos}</span>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Repos</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{totalRepos}</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Repos</span>
           </div>
         </div>
 
@@ -121,8 +145,8 @@ export default function App() {
                 width: '12px', height: '12px', borderRadius: '50%',
                 backgroundColor: colors[index % colors.length]
               }} />
-              <span style={{ fontWeight: '500' }}>{lang}</span>
-              <span style={{ color: '#94a3b8' }}>({count})</span>
+              <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{lang}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>({count})</span>
             </div>
           ))}
         </div>
@@ -172,34 +196,37 @@ export default function App() {
           <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
             <span className="text-gradient">GitHub User Analyzer</span>
           </h1>
-          <p style={{ margin: '4px 0 0 0', color: '#94a3b8' }}>Advanced real-time analytics & visualization for GitHub Profiles</p>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)' }}>Advanced real-time analytics & visualization for GitHub Profiles</p>
         </div>
 
-        {/* Search box */}
-        <div style={{ display: 'flex', gap: '8px', minWidth: '320px', flex: 1, justifyContent: 'flex-end' }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
-            <input
-              type="text"
-              placeholder="Enter GitHub username..."
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                color: 'white',
-                fontSize: '1rem',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-          <button onClick={() => handleSearch()} className="btn-primary" style={{ padding: '0 24px', fontSize: '1rem' }}>
-            Analyze
+        {/* Action Controls (Search box & Theme Toggle) */}
+        <div style={{ display: 'flex', gap: '12px', minWidth: '320px', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+          
+          {/* Theme Toggle Button */}
+          <button 
+            onClick={toggleTheme} 
+            className="theme-toggle-btn"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
+
+          {/* Search Box */}
+          <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '380px' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <input
+                type="text"
+                placeholder="Enter GitHub username..."
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="search-input"
+              />
+            </div>
+            <button onClick={() => handleSearch()} className="btn-primary">
+              Analyze
+            </button>
+          </div>
         </div>
       </div>
 
@@ -210,42 +237,24 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="glass-card" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>Search History</h3>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)' }}>Search History</h3>
               {history.length > 0 && (
                 <button onClick={clearHistory} style={{
-                  background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer', fontSize: '0.8rem'
+                  background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600'
                 }}>
                   Clear
                 </button>
               )}
             </div>
             {history.length === 0 ? (
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>No recent searches</p>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.875rem' }}>No recent searches</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {history.map((h) => (
                   <button
                     key={h}
                     onClick={() => handleSearch(h)}
-                    style={{
-                      textAlign: 'left',
-                      padding: '10px 12px',
-                      borderRadius: '6px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      color: '#cbd5e1',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(99, 102, 241, 0.1)';
-                      e.target.style.borderColor = 'rgba(99, 102, 241, 0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                    }}
+                    className="history-btn"
                   >
                     🔍 {h}
                   </button>
@@ -259,8 +268,8 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
           {error && (
             <div className="glass-card" style={{ borderColor: 'rgba(244, 63, 94, 0.3)', backgroundColor: 'rgba(244, 63, 94, 0.05)' }}>
-              <h4 style={{ margin: 0, color: '#f43f5e' }}>Analysis Failed</h4>
-              <p style={{ margin: '8px 0 0 0', color: '#fda4af' }}>{error}</p>
+              <h4 style={{ margin: 0, color: '#f43f5e', fontWeight: '700' }}>Analysis Failed</h4>
+              <p style={{ margin: '8px 0 0 0', color: 'var(--text-primary)' }}>{error}</p>
             </div>
           )}
 
@@ -275,15 +284,15 @@ export default function App() {
                 animation: 'spin 1s linear infinite'
               }} />
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-              <p style={{ color: '#94a3b8' }}>Fetching live GitHub data and running diagnostics...</p>
+              <p style={{ color: 'var(--text-secondary)' }}>Fetching live GitHub data and running diagnostics...</p>
             </div>
           )}
 
           {!data && !loading && !error && (
             <div className="glass-card" style={{ textAlign: 'center', padding: '60px 40px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div>
-              <h2 style={{ margin: 0 }}>Ready for Diagnostics</h2>
-              <p style={{ margin: '8px 0 0 0', color: '#94a3b8', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontWeight: '700' }}>Ready for Diagnostics</h2>
+              <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
                 Enter a GitHub username in the top right to analyze repository count, star counts, fork statistics, language breakdown, and development patterns.
               </p>
             </div>
@@ -298,83 +307,83 @@ export default function App() {
                   <img
                     src={data.profile.avatarUrl}
                     alt={data.profile.username}
-                    style={{ width: '120px', height: '120px', borderRadius: '50%', border: '4px solid #6366f1', boxShadow: '0 0 20px rgba(99,102,241,0.2)' }}
+                    style={{ width: '120px', height: '120px', borderRadius: '50%', border: '4px solid #6366f1', boxShadow: '0 0 20px rgba(99,102,241,0.15)' }}
                   />
                   <div>
-                    <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>{data.profile.name}</h2>
+                    <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)' }}>{data.profile.name}</h2>
                     <a
                       href={`https://github.com/${data.profile.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: '#a5b4fc', textDecoration: 'none', fontSize: '0.95rem' }}
+                      style={{ color: '#6366f1', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '600' }}
                     >
                       @{data.profile.username}
                     </a>
                   </div>
-                  <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic' }}>
                     {data.profile.bio || 'No bio provided'}
                   </p>
                   
-                  <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(255,255,255,0.08)' }} />
+                  <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--divider)' }} />
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', gap: '12px', fontSize: '0.85rem' }}>
                     <div>
-                      <div style={{ color: '#64748b' }}>Followers</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>{data.profile.followers}</div>
+                      <div style={{ color: 'var(--text-muted)', fontWeight: '600' }}>Followers</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-primary)' }}>{data.profile.followers}</div>
                     </div>
                     <div>
-                      <div style={{ color: '#64748b' }}>Following</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>{data.profile.following}</div>
+                      <div style={{ color: 'var(--text-muted)', fontWeight: '600' }}>Following</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-primary)' }}>{data.profile.following}</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '700', borderBottom: '1px solid var(--divider)', paddingBottom: '12px', color: 'var(--text-primary)' }}>
                     Profile Details
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Location</span>
-                      <span style={{ fontSize: '1rem', fontWeight: '500' }}>{data.profile.location || 'N/A'}</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Location</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{data.profile.location || 'N/A'}</span>
                     </div>
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Account Created</span>
-                      <span style={{ fontSize: '1rem', fontWeight: '500' }}>{formatDate(data.profile.createdAt)}</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Account Created</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{formatDate(data.profile.createdAt)}</span>
                     </div>
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Public Repositories</span>
-                      <span style={{ fontSize: '1rem', fontWeight: '500' }}>{data.profile.publicRepos}</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Public Repositories</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{data.profile.publicRepos}</span>
                     </div>
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>GitHub ID</span>
-                      <span style={{ fontSize: '1rem', fontWeight: '500' }}>{data.profile.username}</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>GitHub ID</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{data.profile.username}</span>
                     </div>
                   </div>
 
                   {data.mostStarredRepository && (
                     <div style={{
-                      marginTop: '10px', padding: '14px', borderRadius: '8px',
+                      marginTop: '10px', padding: '14px', borderRadius: '10px',
                       background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.1)'
                     }}>
-                      <div style={{ fontSize: '0.8rem', color: '#a5b4fc', fontWeight: '600', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
                         ★ Most Starred Repository
                       </div>
                       <a
                         href={data.mostStarredRepository.htmlUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'white', textDecoration: 'none' }}
+                        style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)', textDecoration: 'none' }}
                       >
                         {data.mostStarredRepository.name}
                       </a>
-                      <p style={{ margin: '4px 0 8px 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+                      <p style={{ margin: '4px 0 8px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                         {data.mostStarredRepository.description}
                       </p>
-                      <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
-                        <span>⭐ {data.mostStarredRepository.stars} stars</span>
-                        <span>🍴 {data.mostStarredRepository.forks} forks</span>
-                        <span>💻 {data.mostStarredRepository.language}</span>
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', fontWeight: '600' }}>
+                        <span style={{ color: '#fbbf24' }}>⭐ {data.mostStarredRepository.stars} stars</span>
+                        <span style={{ color: '#38bdf8' }}>🍴 {data.mostStarredRepository.forks} forks</span>
+                        <span style={{ color: 'var(--text-secondary)' }}>💻 {data.mostStarredRepository.language}</span>
                       </div>
                     </div>
                   )}
@@ -384,24 +393,24 @@ export default function App() {
               {/* Analytics Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' }}>
                 <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Total Repos</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '4px 0' }}>{data.totalRepos}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Total Repos</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', margin: '4px 0', color: 'var(--text-primary)' }}>{data.totalRepos}</div>
                 </div>
                 <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Total Stars</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '4px 0', color: '#fbbf24' }}>{data.totalStars}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Total Stars</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', margin: '4px 0', color: '#f59e0b' }}>{data.totalStars}</div>
                 </div>
                 <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Total Forks</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '4px 0', color: '#38bdf8' }}>{data.totalForks}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Total Forks</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', margin: '4px 0', color: '#06b6d4' }}>{data.totalForks}</div>
                 </div>
                 <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Avg Stars/Repo</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '4px 0' }}>{data.avgStars}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Avg Stars/Repo</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', margin: '4px 0', color: 'var(--text-primary)' }}>{data.avgStars}</div>
                 </div>
                 <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Avg Forks/Repo</div>
-                  <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '4px 0' }}>{data.avgForks}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Avg Forks/Repo</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', margin: '4px 0', color: 'var(--text-primary)' }}>{data.avgForks}</div>
                 </div>
               </div>
 
@@ -410,31 +419,31 @@ export default function App() {
                 
                 {/* Language Distribution SVG */}
                 <div className="glass-card">
-                  <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', fontWeight: 'bold' }}>Language Distribution</h3>
+                  <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)' }}>Language Distribution</h3>
                   {renderLanguageDonut()}
                 </div>
 
                 {/* Top Repositories by Stars Chart */}
                 <div className="glass-card">
-                  <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', fontWeight: 'bold' }}>Stars Analytics</h3>
+                  <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)' }}>Stars Analytics</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {data.top5Repositories.map((repo) => {
                       const maxStars = data.top5Repositories[0]?.stars || 1;
                       const percentage = (repo.stars / maxStars) * 100;
                       return (
                         <div key={repo.name} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                             <a
                               href={repo.htmlUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ fontWeight: '600', color: '#cbd5e1', textDecoration: 'none' }}
+                              style={{ fontWeight: '600', color: 'var(--text-primary)', textDecoration: 'none' }}
                             >
                               {repo.name}
                             </a>
-                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>★ {repo.stars}</span>
+                            <span style={{ color: '#f59e0b', fontWeight: '700' }}>★ {repo.stars}</span>
                           </div>
-                          <div style={{ width: '100%', height: '8px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--table-border-header)', borderRadius: '4px', overflow: 'hidden' }}>
                             <div style={{
                               width: `${percentage}%`, height: '100%',
                               background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)',
@@ -455,15 +464,15 @@ export default function App() {
                 
                 {/* Repository Distribution Card */}
                 <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: 'bold' }}>Repository Distribution</h3>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)' }}>Repository Distribution</h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                        <span>Original Repositories</span>
-                        <span style={{ fontWeight: 'bold' }}>{data.originalReposCount}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Original Repositories</span>
+                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{data.originalReposCount}</span>
                       </div>
-                      <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--table-border-header)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div style={{
                           width: `${data.totalRepos > 0 ? (data.originalReposCount / data.totalRepos) * 100 : 0}%`,
                           height: '100%', backgroundColor: '#10b981', borderRadius: '3px'
@@ -472,11 +481,11 @@ export default function App() {
                     </div>
 
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                        <span>Forked Repositories</span>
-                        <span style={{ fontWeight: 'bold' }}>{data.forkedReposCount}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Forked Repositories</span>
+                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{data.forkedReposCount}</span>
                       </div>
-                      <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--table-border-header)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div style={{
                           width: `${data.totalRepos > 0 ? (data.forkedReposCount / data.totalRepos) * 100 : 0}%`,
                           height: '100%', backgroundColor: '#38bdf8', borderRadius: '3px'
@@ -485,16 +494,16 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px', padding: '12px', background: 'var(--sidebar-item-bg)', border: '1px solid var(--sidebar-item-border)', borderRadius: '8px' }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Original %</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>Original %</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#10b981' }}>
                         {data.totalRepos > 0 ? Math.round((data.originalReposCount / data.totalRepos) * 100) : 0}%
                       </div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Forked %</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>Forked %</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#38bdf8' }}>
                         {data.totalRepos > 0 ? Math.round((data.forkedReposCount / data.totalRepos) * 100) : 0}%
                       </div>
                     </div>
@@ -503,51 +512,51 @@ export default function App() {
 
                 {/* Repository Activity Analytics */}
                 <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>Repository Activity</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)' }}>Repository Activity</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                     
-                    <div style={{ padding: '14px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#818cf8', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    <div style={{ padding: '14px', borderRadius: '8px', background: 'var(--sidebar-item-bg)', border: '1px solid var(--sidebar-item-border)' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px' }}>
                         Newest
                       </div>
                       {data.newestRepository ? (
                         <>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {data.newestRepository.name}
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                             {formatDate(data.newestRepository.createdAt)}
                           </div>
                         </>
                       ) : 'N/A'}
                     </div>
 
-                    <div style={{ padding: '14px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#f43f5e', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    <div style={{ padding: '14px', borderRadius: '8px', background: 'var(--sidebar-item-bg)', border: '1px solid var(--sidebar-item-border)' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px' }}>
                         Oldest
                       </div>
                       {data.oldestRepository ? (
                         <>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {data.oldestRepository.name}
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                             {formatDate(data.oldestRepository.createdAt)}
                           </div>
                         </>
                       ) : 'N/A'}
                     </div>
 
-                    <div style={{ padding: '14px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    <div style={{ padding: '14px', borderRadius: '8px', background: 'var(--sidebar-item-bg)', border: '1px solid var(--sidebar-item-border)' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px' }}>
                         Recently Updated
                       </div>
                       {data.recentlyUpdatedRepository ? (
                         <>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {data.recentlyUpdatedRepository.name}
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                             {formatDate(data.recentlyUpdatedRepository.updatedAt)}
                           </div>
                         </>
@@ -562,23 +571,15 @@ export default function App() {
               {/* Complete Repository Table */}
               <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 'bold' }}>All Repositories</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-primary)' }}>All Repositories</h3>
                   
                   <input
                     type="text"
                     placeholder="Filter repositories..."
                     value={tableSearch}
                     onChange={(e) => setTableSearch(e.target.value)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      backgroundColor: 'rgba(15, 23, 42, 0.4)',
-                      color: 'white',
-                      fontSize: '0.875rem',
-                      outline: 'none',
-                      minWidth: '220px'
-                    }}
+                    className="search-input"
+                    style={{ minWidth: '220px', maxWidth: '300px' }}
                   />
                 </div>
 
@@ -614,31 +615,31 @@ export default function App() {
                               href={repo.htmlUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: '#a5b4fc', textDecoration: 'none', fontWeight: '500' }}
+                              style={{ color: '#6366f1', textDecoration: 'none', fontWeight: '600' }}
                             >
                               {repo.name}
                             </a>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {repo.description}
                             </div>
                           </td>
                           <td>
                             <span style={{
-                              padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem',
-                              backgroundColor: 'rgba(255,255,255,0.05)', color: '#cbd5e1'
+                              padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600',
+                              backgroundColor: 'var(--sidebar-item-border)', color: 'var(--text-primary)'
                             }}>
                               {repo.language}
                             </span>
                           </td>
-                          <td style={{ color: '#fbbf24', fontWeight: '600' }}>★ {repo.stars}</td>
-                          <td style={{ color: '#38bdf8' }}>🍴 {repo.forks}</td>
+                          <td style={{ color: '#f59e0b', fontWeight: '700' }}>★ {repo.stars}</td>
+                          <td style={{ color: '#06b6d4', fontWeight: '600' }}>🍴 {repo.forks}</td>
                           <td>{formatDate(repo.createdAt)}</td>
                           <td>{formatDate(repo.updatedAt)}</td>
                         </tr>
                       ))}
                       {sortedRepos.length === 0 && (
                         <tr>
-                          <td colSpan="6" style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>
+                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
                             No repositories found matching search.
                           </td>
                         </tr>
