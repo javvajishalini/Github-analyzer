@@ -8,10 +8,14 @@ export default function App() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
   
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(''); // Stores the logged-in username
+  
   // Theme state: 'dark' or 'light'
   const [theme, setTheme] = useState('dark');
 
-  // Load history and theme from localStorage
+  // Load history, theme, and authentication session
   useEffect(() => {
     const savedHistory = localStorage.getItem('git_analyzer_history');
     if (savedHistory) {
@@ -26,6 +30,14 @@ export default function App() {
       } else {
         document.documentElement.classList.remove('light');
       }
+    }
+
+    const sessionUser = localStorage.getItem('git_analyzer_session');
+    if (sessionUser) {
+      setIsLoggedIn(true);
+      setCurrentUser(sessionUser);
+      // Pre-fetch their profile
+      handleSearch(sessionUser, true);
     }
   }, []);
 
@@ -44,18 +56,54 @@ export default function App() {
     const cleanName = name.trim().toLowerCase();
     if (!cleanName) return;
     let updated = [cleanName, ...history.filter(h => h !== cleanName)];
-    if (updated.length > 8) updated = updated.slice(0, 8); // Keep last 8 searches
+    if (updated.length > 8) updated = updated.slice(0, 8);
     setHistory(updated);
     localStorage.setItem('git_analyzer_history', JSON.stringify(updated));
   };
 
-  const handleSearch = async (searchName) => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/analyze?username=${encodeURIComponent(username.trim())}`);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'User not found. Please enter a valid GitHub username.');
+      }
+
+      // Log in success
+      setIsLoggedIn(true);
+      setCurrentUser(username.trim());
+      setData(result);
+      localStorage.setItem('git_analyzer_session', username.trim());
+      saveToHistory(username);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser('');
+    setData(null);
+    setUsername('');
+    localStorage.removeItem('git_analyzer_session');
+  };
+
+  const handleSearch = async (searchName, isInitialLogin = false) => {
     const target = searchName || username;
     if (!target.trim()) return;
 
     setLoading(true);
     setError('');
-    setData(null);
+    if (!isInitialLogin) setData(null);
 
     try {
       const response = await fetch(`http://localhost:8080/api/analyze?username=${encodeURIComponent(target.trim())}`);
@@ -67,7 +115,7 @@ export default function App() {
 
       setData(result);
       saveToHistory(target);
-      if (!searchName) setUsername(target);
+      if (!isInitialLogin) setUsername(target);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -97,7 +145,7 @@ export default function App() {
 
     let accumulatedPercentage = 0;
     const radius = 50;
-    const circ = 2 * Math.PI * radius; // ~314.16
+    const circ = 2 * Math.PI * radius;
 
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '32px', justifyContent: 'center' }}>
@@ -187,19 +235,81 @@ export default function App() {
     return dateStr.substring(0, 10);
   };
 
+  // RENDER LOGIN PAGE
+  if (!isLoggedIn) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', padding: '20px',
+        boxSizing: 'border-box'
+      }}>
+        {/* Theme toggle on login screen */}
+        <button 
+          onClick={toggleTheme} 
+          className="theme-toggle-btn"
+          style={{ position: 'absolute', top: '24px', right: '24px' }}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
+        <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '40px 30px' }}>
+          
+          {/* GitHub SVG Icon */}
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px auto', boxShadow: '0 8px 24px rgba(99, 102, 241, 0.25)'
+          }}>
+            <svg height="40" viewBox="0 0 16 16" width="40" style={{ fill: 'white' }}>
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+          </div>
+
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '1.75rem', fontWeight: '800' }}>
+            <span className="text-gradient">GitHub User Analyzer</span>
+          </h2>
+          <p style={{ margin: '0 0 32px 0', color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: '1.45' }}>
+            Enter your GitHub username to access repository intelligence and visual analytics.
+          </p>
+
+            <button onClick={() => {
+              // Redirect to Spring Boot OAuth2 login endpoint
+              window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+            }} className="btn-primary" style={{ width: '100%', padding: '12px 20px', marginTop: '8px' }}>
+              Sign in with GitHub
+            </button>
+
+          {error && (
+            <div style={{
+              marginTop: '20px', padding: '12px', borderRadius: '8px',
+              backgroundColor: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.2)',
+              color: '#f43f5e', fontSize: '0.85rem', textAlign: 'left', fontWeight: '600'
+            }}>
+              ⚠️ {error}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // RENDER AUTHENTICATED DASHBOARD
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
       
       {/* Header / Brand */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
+          <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
             <span className="text-gradient">GitHub User Analyzer</span>
           </h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)' }}>Advanced real-time analytics & visualization for GitHub Profiles</p>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Logged in as <strong style={{ color: 'var(--text-primary)' }}>@{currentUser}</strong>
+          </p>
         </div>
 
-        {/* Action Controls (Search box & Theme Toggle) */}
+        {/* Action Controls (Search box & Logout) */}
         <div style={{ display: 'flex', gap: '12px', minWidth: '320px', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
           
           {/* Theme Toggle Button */}
@@ -212,28 +322,40 @@ export default function App() {
           </button>
 
           {/* Search Box */}
-          <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '380px' }}>
+          <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '340px' }}>
             <div style={{ position: 'relative', width: '100%' }}>
               <input
                 type="text"
-                placeholder="Enter GitHub username..."
+                placeholder="Analyze other user..."
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="search-input"
               />
             </div>
-            <button onClick={() => handleSearch()} className="btn-primary">
-              Analyze
+            <button onClick={() => handleSearch()} className="btn-primary" style={{ padding: '0 16px' }}>
+              Search
             </button>
           </div>
+
+          {/* Logout Button */}
+          <button 
+            onClick={handleLogout} 
+            className="theme-toggle-btn" 
+            title="Sign Out" 
+            style={{ fontSize: '1.1rem', backgroundColor: 'rgba(244, 63, 94, 0.05)', borderColor: 'rgba(244, 63, 94, 0.15)' }}
+            onMouseEnter={(e) => { e.target.style.borderColor = '#f43f5e'; }}
+            onMouseLeave={(e) => { e.target.style.borderColor = 'rgba(244, 63, 94, 0.15)'; }}
+          >
+            🚪
+          </button>
         </div>
       </div>
 
       {/* Main Content Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '30px', alignItems: 'start' }}>
         
-        {/* Sidebar (History & Quick Tips) */}
+        {/* Sidebar (History) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="glass-card" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -284,21 +406,11 @@ export default function App() {
                 animation: 'spin 1s linear infinite'
               }} />
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-              <p style={{ color: 'var(--text-secondary)' }}>Fetching live GitHub data and running diagnostics...</p>
+              <p style={{ color: 'var(--text-secondary)' }}>Loading diagnostics...</p>
             </div>
           )}
 
-          {!data && !loading && !error && (
-            <div className="glass-card" style={{ textAlign: 'center', padding: '60px 40px' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontWeight: '700' }}>Ready for Diagnostics</h2>
-              <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
-                Enter a GitHub username in the top right to analyze repository count, star counts, fork statistics, language breakdown, and development patterns.
-              </p>
-            </div>
-          )}
-
-          {data && (
+          {data && !loading && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
               
               {/* Profile Card & Basic Details */}
@@ -381,8 +493,8 @@ export default function App() {
                         {data.mostStarredRepository.description}
                       </p>
                       <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', fontWeight: '600' }}>
-                        <span style={{ color: '#fbbf24' }}>⭐ {data.mostStarredRepository.stars} stars</span>
-                        <span style={{ color: '#38bdf8' }}>🍴 {data.mostStarredRepository.forks} forks</span>
+                        <span style={{ color: '#f59e0b' }}>⭐ {data.mostStarredRepository.stars} stars</span>
+                        <span style={{ color: '#06b6d4' }}>🍴 {data.mostStarredRepository.forks} forks</span>
                         <span style={{ color: 'var(--text-secondary)' }}>💻 {data.mostStarredRepository.language}</span>
                       </div>
                     </div>
