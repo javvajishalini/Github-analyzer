@@ -1,5 +1,9 @@
-# Maven output
-target/
+# Backend Maven output
+backend/target/
+
+# Frontend node modules and build output
+frontend/node_modules/
+frontend/dist/
 
 # IDE configurations
 .idea/
@@ -7,6 +11,7 @@ target/
 .classpath
 .project
 .settings/
+*.log
 
 # OS specific files
 Thumbs.db
