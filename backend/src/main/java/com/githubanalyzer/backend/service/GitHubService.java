@@ -149,15 +149,24 @@ public class GitHubService {
                         parseOffsetDateTime(r.getUpdatedAt())))
                 .collect(Collectors.toList());
     }
-
     private UserProfile fetchUserProfile(String username) throws IOException, InterruptedException {
-        String url = BASE_URL + "/users/" + encodeValue(username);
-        HttpRequest request = HttpRequest.newBuilder()
+        // Use client credentials query parameters to authenticate API calls and increase rate limit to 5000 requests/hr
+        String clientId = "Ov23liFug0MJzfReQ4Xu";
+        String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
+        String url = BASE_URL + "/users/" + encodeValue(username) + "?client_id=" + clientId + "&client_secret=" + clientSecret;
+
+        String token = System.getenv("GITHUB_TOKEN");
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("User-Agent", "Java-Spring-GitHub-User-Analyzer")
                 .header("Accept", "application/vnd.github+json")
-                .GET()
-                .build();
+                .GET();
+
+        if (token != null && !token.isEmpty()) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+        HttpRequest request = builder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -179,13 +188,21 @@ public class GitHubService {
         boolean hasMore = true;
 
         while (hasMore) {
-            String url = BASE_URL + "/users/" + encodeValue(username) + "/repos?per_page=" + perPage + "&page=" + page;
-            HttpRequest request = HttpRequest.newBuilder()
+            String clientId = "Ov23liFug0MJzfReQ4Xu";
+            String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
+            String url = BASE_URL + "/users/" + encodeValue(username) + "/repos?per_page=" + perPage + "&page=" + page + "&client_id=" + clientId + "&client_secret=" + clientSecret;
+            String token = System.getenv("GITHUB_TOKEN");
+
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("User-Agent", "Java-Spring-GitHub-User-Analyzer")
                     .header("Accept", "application/vnd.github+json")
-                    .GET()
-                    .build();
+                    .GET();
+
+            if (token != null && !token.isEmpty()) {
+                builder.header("Authorization", "Bearer " + token);
+            }
+            HttpRequest request = builder.build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 

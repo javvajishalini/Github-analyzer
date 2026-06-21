@@ -10,7 +10,7 @@ import org.springframework.web.context.request.WebRequest;
 public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex, WebRequest request) {
-        // Log exception (could use a logger)
+        ex.printStackTrace(); // Print backend console stack trace for debugging
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
