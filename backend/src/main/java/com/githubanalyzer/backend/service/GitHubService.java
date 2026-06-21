@@ -2,7 +2,7 @@ package com.githubanalyzer.backend.service;
 
 import com.githubanalyzer.backend.model.AnalysisResult;
 import com.githubanalyzer.backend.model.Repository;
-import com.githubanalyzer.backend.model.UserProfile;
+import com.githubanalyzer.backend.dto.UserProfileDto;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -105,6 +105,21 @@ public class GitHubService {
         result.setPublicReposCount(totalRepos);
 
         return result;
+    }
+
+    public UserProfileDto getUserProfileDto(String username) throws IOException, InterruptedException {
+        UserProfile profile = fetchUserProfile(username);
+        return new UserProfileDto(
+                profile.getAvatarUrl(),
+                profile.getName(),
+                profile.getUsername(),
+                profile.getBio(),
+                profile.getLocation(),
+                profile.getCreatedAt(),
+                profile.getFollowers(),
+                profile.getFollowing(),
+                profile.getPublicRepos()
+        );
     }
 
     private UserProfile fetchUserProfile(String username) throws IOException, InterruptedException {
