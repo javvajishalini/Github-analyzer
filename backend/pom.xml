@@ -34,16 +34,20 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-        <!-- Spring Boot OAuth2 Client -->
+
+        <!-- Spring Boot Security (required for OAuth2) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
         <!-- Spring Boot OAuth2 Client -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <!-- Spring Boot Maven Plugin -->

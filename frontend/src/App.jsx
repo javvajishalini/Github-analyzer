@@ -11,6 +11,8 @@ export default function App() {
   // Authentication states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(''); // Stores the logged-in username
+  const [showAccountsPage, setShowAccountsPage] = useState(false);
+  const [loggedAccounts, setLoggedAccounts] = useState(() => JSON.parse(localStorage.getItem('git_analyzer_accounts')) || []);
   
   // Theme state: 'dark' or 'light'
   const [theme, setTheme] = useState('dark');
@@ -36,10 +38,20 @@ export default function App() {
     if (sessionUser) {
       setIsLoggedIn(true);
       setCurrentUser(sessionUser);
+      setShowAccountsPage(true);
       // Pre-fetch their profile
       handleSearch(sessionUser, true);
     }
   }, []);
+
+  // Sync logged accounts on login status change
+  useEffect(() => {
+    if (isLoggedIn && currentUser) {
+      const updatedAccounts = Array.from(new Set([...loggedAccounts, currentUser]));
+      setLoggedAccounts(updatedAccounts);
+      localStorage.setItem('git_analyzer_accounts', JSON.stringify(updatedAccounts));
+    }
+  }, [isLoggedIn, currentUser]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -75,12 +87,18 @@ export default function App() {
       if (!response.ok) {
         throw new Error(result.error || 'User not found. Please enter a valid GitHub username.');
       }
-
+      
       // Log in success
       setIsLoggedIn(true);
       setCurrentUser(username.trim());
       setData(result);
       localStorage.setItem('git_analyzer_session', username.trim());
+      // Update logged accounts list
+      const updatedAccounts = Array.from(new Set([...loggedAccounts, username.trim()]));
+      setLoggedAccounts(updatedAccounts);
+      localStorage.setItem('git_analyzer_accounts', JSON.stringify(updatedAccounts));
+      // Show accounts overview page
+      setShowAccountsPage(true);
       saveToHistory(username);
     } catch (err) {
       setError(err.message);
@@ -288,7 +306,24 @@ export default function App() {
       </div>
     );
   }
-
+  // Accounts overview page
+  if (isLoggedIn && showAccountsPage) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', boxSizing: 'border-box' }}>
+        <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '40px 30px' }}>
+          <h2 style={{ margin: '0 0 16px 0', fontSize: '1.75rem', fontWeight: '800' }}>Logged In Accounts</h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {loggedAccounts.map((acct) => (
+              <li key={acct} style={{ margin: '8px 0', fontSize: '1rem', color: 'var(--text-primary)' }}>{acct}</li>
+            ))}
+          </ul>
+          <button onClick={() => setShowAccountsPage(false)} className="btn-primary" style={{ width: '100%', marginTop: '24px', padding: '12px 20px' }}>
+            Continue to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
   // RENDER AUTHENTICATED DASHBOARD
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
