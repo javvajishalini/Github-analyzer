@@ -1,0 +1,4 @@
+com\githubanalyzer\model\UserProfile.class
+com\githubanalyzer\service\GitHubService$1.class
+com\githubanalyzer\model\Repository.class
+com\githubanalyzer\service\GitHubService.class
