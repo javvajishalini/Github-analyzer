@@ -2,6 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Overview.css';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+
+const exportPDF = async (username) => {
+  const element = document.querySelector('.overview-page');
+  if (!element) return;
+  const canvas = await html2canvas(element);
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  pdf.save(`${username}_overview.pdf`);
+};
+
 
 export default function Overview() {
   const location = useLocation();
@@ -68,6 +84,11 @@ export default function Overview() {
           </p>
         </div>
       </section>
+
+      {/* Export PDF button */}
+      <button className="export-button" onClick={() => exportPDF(username)}>
+        Export Dashboard as PDF
+      </button>
 
       <section className="analytics-cards">
         <div className="card"><h3>Total Repos</h3><p>{totalRepos}</p></div>
