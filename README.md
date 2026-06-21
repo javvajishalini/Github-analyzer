@@ -6,12 +6,58 @@ A premium, full-stack diagnostics and analytics dashboard for GitHub profiles. B
 
 ## ✨ Features
 
-*   **🔒 Secure GitHub Sign-In:** Authenticate seamlessly using GitHub OAuth2.
-*   **📈 Visual Analytics:** Render language distributions (Recharts Pie charts) and repository statistics.
+*   **🔒 Secure GitHub Sign-In:** Authenticate seamlessly using GitHub OAuth2 protocols.
+*   **📈 Visual Analytics:** Render language distributions (custom Recharts Pie charts) and repository metrics.
 *   **🌱 Developer Milestones:** Easily view oldest, newest, and recently updated project metadata.
 *   **📋 Interactive Repository Grid:** Filter, sort (by name, language, stars, and forks), and paginate repository listings.
 *   **📄 PDF Report Export:** Save a beautifully-rendered developer summary report as a PDF using `jsPDF` and `html2canvas`.
 *   **☀️ Dynamic Theme Swapper:** Toggle between a futuristic dark slate mode and a clean, high-contrast light mode.
+
+---
+
+## ⚙️ How It Works (Architecture & Data Flow)
+
+The application operates as a decoupled client-server system communicating over REST endpoints with Vite proxy forwarding.
+
+```mermaid
+sequenceDiagram
+    participant User as Browser / Frontend (5173)
+    participant Server as Spring Boot Backend (8080)
+    participant GitHub as GitHub API
+    
+    User->>Server: Click "Sign in with GitHub" (/oauth2/authorization/github)
+    Server->>GitHub: Redirect to GitHub Authorization Page
+    GitHub-->>Server: Callback with Auth Code (/login/oauth2/code/github)
+    Server-->>User: Redirect to Frontend success route (/login-success?username={login})
+    Note over User: Saves username to localStorage
+    
+    User->>Server: Request Diagnostics /api/github/analytics/{username} (Proxied)
+    Server->>GitHub: Fetch Profile stats (/users/{username})
+    Server->>GitHub: Fetch Repositories list (/users/{username}/repos)
+    Note over Server: Calculates total stars, avg forks,<br/>newest/oldest repo, & language counts
+    Server-->>User: Returns serialized AnalysisResult JSON
+    Note over User: Renders charts & interactive data tables
+```
+
+### 1. The OAuth2 Authentication Pipeline
+1. The user visits the frontend dashboard at `http://localhost:5173/` and clicks **Sign in with GitHub**.
+2. The browser is directed to `http://localhost:8080/oauth2/authorization/github`, triggering Spring Security’s OAuth2 workflow.
+3. Upon authorization on GitHub's secure page, GitHub redirects back to the backend callback (`/login/oauth2/code/github`) with an authorization code.
+4. The backend exchanges the code for an access token, instantiates an authentication context, and handles success via the `OAuth2LoginSuccessHandler`.
+5. The handler redirects the user back to the React app: `http://localhost:5173/login-success?username={login}`.
+6. The frontend captures the username parameter, saves the active session context in `localStorage`, and routes the client to the Overview diagnostics view.
+
+### 2. The Diagnostics & Analytics Engine
+1. When loading statistics for a developer, the frontend calls the relative path `/api/github/analytics/{username}`.
+2. The local Vite dev server proxies `/api` requests same-origin to the Spring Boot backend (`http://localhost:8080/api`), preventing CORS blockages.
+3. The backend’s `GitHubService` performs asynchronous network calls to GitHub's REST API (`https://api.github.com/users/{username}`) to grab user metadata, and recursively paginates through `/users/{username}/repos` to fetch all public repositories.
+4. The backend filters out fork details, sums up stargazers and forks counts, compares creation dates to determine oldest/newest projects, sorts repositories by stars to find top repositories, and maps programming language distribution counts.
+5. The computed metrics are packaged into an `AnalysisResult` data structure and returned as a JSON payload.
+
+### 3. Data Representation & Reporting
+1. The frontend parses the `AnalysisResult` and feeds the language count array to a responsive `Recharts` SVG pie chart.
+2. Repositories are mapped into a client-side sorted, filtered, and paginated custom HTML table.
+3. When the user selects **Export PDF Report**, the `html2canvas` parser grabs the DOM layout container, constructs a canvas image frame, and pushes it into a structured high-resolution vector PDF using `jsPDF` for downloads.
 
 ---
 
