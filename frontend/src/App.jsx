@@ -81,7 +81,7 @@ export default function App() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:8080/api/analyze?username=${encodeURIComponent(username.trim())}`);
+      const response = await fetch(`http://localhost:8080/api/github/user?username=${encodeURIComponent(username.trim())}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -124,7 +124,7 @@ export default function App() {
     if (!isInitialLogin) setData(null);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/analyze?username=${encodeURIComponent(target.trim())}`);
+      const response = await fetch(`http://localhost:8080/api/github/user?username=${encodeURIComponent(target.trim())}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -385,34 +385,14 @@ export default function App() {
       {/* Main Content Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '30px', alignItems: 'start' }}>
         
-        {/* Sidebar (History) */}
+        {/* Sidebar (Welcome, Logout, Theme Toggle) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="glass-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)' }}>Search History</h3>
-              {history.length > 0 && (
-                <button onClick={clearHistory} style={{
-                  background: 'none', border: 'none', color: '#f43f5e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600'
-                }}>
-                  Clear
-                </button>
-              )}
-            </div>
-            {history.length === 0 ? (
-              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.875rem' }}>No recent searches</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {history.map((h) => (
-                  <button
-                    key={h}
-                    onClick={() => handleSearch(h)}
-                    className="history-btn"
-                  >
-                    🔍 {h}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>Welcome, {currentUser}</h3>
+            <button onClick={handleLogout} className="btn-primary" style={{ marginTop: '16px', width: '100%' }}>Logout</button>
+            <button onClick={toggleTheme} className="theme-toggle-btn" style={{ marginTop: '12px' }}>
+              {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            </button>
           </div>
         </div>
 
