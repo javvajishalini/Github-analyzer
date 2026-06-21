@@ -1,1 +1,178 @@
-/* Clear default styles */
+/* App.css */
+
+/* Define variables for both dark (default) and light themes */
+:root {
+  --bg-primary: #0b0f19;
+  --bg-gradient: radial-gradient(circle at top left, #0f172a 0%, #020617 100%);
+  --text-h: #f8fafc;
+  --text-p: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --tooltip-bg: #1e293b;
+  --header-bg: rgba(15, 23, 42, 0.6);
+  --accent-color: #10b981;
+}
+
+:root.light {
+  --bg-primary: #f8fafc;
+  --bg-gradient: radial-gradient(circle at top left, #ffffff 0%, #f1f5f9 100%);
+  --text-h: #0f172a;
+  --text-p: #475569;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --tooltip-bg: #ffffff;
+  --header-bg: rgba(248, 250, 252, 0.6);
+  --accent-color: #059669;
+}
+
+/* Page transitions and structural layout */
+body {
+  background: var(--bg-gradient);
+  background-color: var(--bg-primary);
+  color: var(--text-h);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.content-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  margin-left: 240px;
+  flex-grow: 1;
+  box-sizing: border-box;
+  width: calc(100% - 240px);
+}
+
+/* Login Screen Styles */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  padding: 2rem;
+  background: var(--bg-gradient);
+  background-color: var(--bg-primary);
+}
+
+.login-header {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 3.5rem 2.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.github-icon-shield {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem auto;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-subtitle {
+  color: var(--text-p);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.login-button:hover {
+  background-color: #059669;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+/* Common loading spinner style */
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 4px solid rgba(16, 185, 129, 0.15);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Light theme overrides for login */
+.light .login-card {
+  background: rgba(0, 0, 0, 0.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}

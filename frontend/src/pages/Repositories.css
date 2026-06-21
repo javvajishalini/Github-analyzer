@@ -1,0 +1,193 @@
+/* Repositories.css */
+.repositories-page {
+  padding: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.repositories-page-loading,
+.repositories-page-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  gap: 1.5rem;
+  color: var(--text-h);
+}
+
+.repositories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.repositories-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.repo-count-badge {
+  padding: 0.4rem 0.85rem;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 2rem;
+}
+
+.repo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.repo-table th,
+.repo-table td {
+  padding: 1.2rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-h);
+}
+
+.repo-table th {
+  background: rgba(255, 255, 255, 0.02);
+  font-weight: 700;
+  color: var(--text-h);
+  user-select: none;
+}
+
+.sortable-header {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sortable-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.repo-table tr:last-child td {
+  border-bottom: none;
+}
+
+.repo-table tr:hover td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.repo-table-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-h);
+}
+
+.repo-table-desc {
+  font-size: 0.8rem;
+  color: var(--text-p);
+  margin: 0.35rem 0 0 0;
+  line-height: 1.4;
+}
+
+.repo-lang-badge {
+  padding: 0.25rem 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.star-cell {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.fork-cell {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+.view-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.view-link:hover {
+  text-decoration: underline;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pagination-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-h);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.9rem;
+  color: var(--text-p);
+}
+
+/* Light mode overrides */
+.light .table-container {
+  background: rgba(0, 0, 0, 0.01);
+}
+.light .repo-table th {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .sortable-header:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.light .repo-table tr:hover td {
+  background: rgba(0, 0, 0, 0.008);
+}
+.light .repo-lang-badge {
+  background: rgba(0, 0, 0, 0.03);
+}
+.light .pagination-btn {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .pagination-btn:hover:not(:disabled) {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
+}
