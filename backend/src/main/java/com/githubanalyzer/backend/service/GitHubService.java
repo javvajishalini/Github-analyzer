@@ -16,8 +16,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
+import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
+import com.githubanalyzer.backend.dto.RepoDto;
+
+
+
 
 @Service
 public class GitHubService {
@@ -123,6 +131,25 @@ public class GitHubService {
         );
     }
 
+    // ---------------------------------------------------------------------
+    // Public API for controller – returns a list of RepoDto for a user
+    // ---------------------------------------------------------------------
+    public List<RepoDto> getUserRepositoriesDto(String username) throws IOException, InterruptedException {
+        List<Repository> repos = fetchRepositories(username);
+        return repos.stream()
+                .map(r -> new RepoDto(
+                        r.getName(),
+                        r.getDescription(),
+                        r.getHtmlUrl(),
+                        r.getLanguage(),
+                        r.getStars(),
+                        r.getForks(),
+                        r.isFork(),
+                        parseOffsetDateTime(r.getCreatedAt()),
+                        parseOffsetDateTime(r.getUpdatedAt())))
+                .collect(Collectors.toList());
+    }
+
     private UserProfile fetchUserProfile(String username) throws IOException, InterruptedException {
         String url = BASE_URL + "/users/" + encodeValue(username);
         HttpRequest request = HttpRequest.newBuilder()
@@ -185,6 +212,20 @@ public class GitHubService {
             }
         }
         return allRepos;
+    }
+
+    /**
+     * Parses an ISO-8601 date string returned by GitHub API into {@link OffsetDateTime}.
+     * Returns {@code null} if the input is {@code null} or cannot be parsed.
+     */
+    private OffsetDateTime parseOffsetDateTime(String dateStr) {
+        if (dateStr == null) return null;
+        try {
+            return OffsetDateTime.parse(dateStr);
+        } catch (Exception e) {
+            // Fallback: return null if parsing fails
+            return null;
+        }
     }
 
     private String encodeValue(String value) {
