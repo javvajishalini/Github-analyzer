@@ -267,18 +267,13 @@ export default function App() {
           </div>
 
           <h2 style={{ margin: '0 0 8px 0', fontSize: '1.75rem', fontWeight: '800' }}>
-            <span className="text-gradient">GitHub User Analyzer</span>
+            <span className="text-gradient">GitHub Analyzer</span>
           </h2>
           <p style={{ margin: '0 0 32px 0', color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: '1.45' }}>
-            Enter your GitHub username to access repository intelligence and visual analytics.
+            Analyze any GitHub user's repositories, stars, forks, languages, and more with interactive visual analytics.
           </p>
 
-            <button onClick={() => {
-              // Redirect to Spring Boot OAuth2 login endpoint
-              window.location.href = 'http://localhost:8080/oauth2/authorization/github';
-            }} className="btn-primary" style={{ width: '100%', padding: '12px 20px', marginTop: '8px' }}>
-              Sign in with GitHub
-            </button>
+<button onClick={() => window.location.href='http://localhost:8080/oauth2/authorization/github'} className="btn-primary" style={{ width: '100%', padding: '12px 20px', marginTop: '8px', display: 'inline-block', textAlign: 'center' }}>Sign in with GitHub</button>
 
           {error && (
             <div style={{
