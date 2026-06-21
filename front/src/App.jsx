@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import Header from './components/Header';
 import Overview from './pages/Overview';
 import Repositories from './pages/Repositories';
 import Languages from './pages/Languages';
@@ -12,6 +13,7 @@ function App() {
     <Router>
       <div className="app-container">
         <Sidebar />
+        <Header />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Navigate to="/overview" replace />} />
