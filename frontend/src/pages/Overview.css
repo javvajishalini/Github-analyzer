@@ -21,8 +21,8 @@
 .spinner {
   width: 45px;
   height: 45px;
-  border: 4px solid rgba(16, 185, 129, 0.2);
-  border-top-color: #10b981;
+  border: 4px solid rgba(168, 85, 247, 0.15);
+  border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -49,7 +49,7 @@
   align-items: center;
   gap: 2.5rem;
   padding: 2.5rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
@@ -62,8 +62,8 @@
   height: 130px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #10b981;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+  border: 3px solid var(--accent-color);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
 }
 
 .profile-card .info h2 {
@@ -73,7 +73,7 @@
 }
 
 .profile-card .username {
-  color: #10b981;
+  color: var(--accent-color);
   font-weight: 600;
   margin: 0.25rem 0 0.75rem 0;
   font-size: 1.1rem;
@@ -115,20 +115,20 @@
 }
 
 .analytics-cards .card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 .analytics-cards .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--card-border-hover);
 }
 
 .analytics-cards .card h3 {
@@ -156,7 +156,7 @@
 }
 
 .grid-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
@@ -210,7 +210,7 @@
 .repo-name {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #6366f1;
+  color: var(--accent-color);
   text-decoration: none;
   display: inline-block;
   margin-bottom: 0.5rem;
@@ -236,41 +236,47 @@
 
 .export-button {
   padding: 0.65rem 1.3rem;
-  background: #10b981;
+  background: var(--accent-color);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.9rem;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background-color 0.2s, transform 0.1s, filter 0.2s;
 }
 
 .export-button:hover {
-  background-color: #059669;
+  filter: brightness(1.1);
+  background-color: var(--accent-color-hover);
 }
 
 .search-redirect-btn {
   padding: 0.75rem 1.5rem;
-  background: #6366f1;
+  background: var(--accent-color);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
+  transition: filter 0.2s;
+}
+
+.search-redirect-btn:hover {
+  filter: brightness(1.1);
 }
 
 /* Light Mode Overrides */
 .light .profile-card,
 .light .analytics-cards .card,
 .light .grid-card {
-  background: rgba(0, 0, 0, 0.02);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
 }
 .light .standout-item {
   background: rgba(0, 0, 0, 0.01);
 }
 .light .stat-pill {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.02);
 }

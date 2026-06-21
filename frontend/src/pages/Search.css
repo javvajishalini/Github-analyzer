@@ -17,7 +17,7 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 3rem 2.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--card-shadow);
   text-align: center;
 }
 
@@ -26,7 +26,7 @@
   font-weight: 800;
   margin-top: 0;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  background: var(--text-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -58,24 +58,25 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: var(--accent-color);
   background: rgba(255, 255, 255, 0.1);
 }
 
 .search-button {
   padding: 0.9rem 1.75rem;
-  background: #10b981;
+  background: var(--accent-color);
   color: #fff;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background-color 0.2s, transform 0.1s, filter 0.2s;
 }
 
 .search-button:hover {
-  background-color: #059669;
+  filter: brightness(1.1);
+  background-color: var(--accent-color-hover);
 }
 
 .search-button:active {
@@ -124,19 +125,19 @@
   color: var(--text-p);
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .history-tag-btn:hover {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.3);
+  background: var(--sidebar-item-bg);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 /* Light mode adjustments */
 .light .search-card {
   background: rgba(0, 0, 0, 0.02);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--card-shadow);
 }
 .light .search-input {
   background: rgba(0, 0, 0, 0.03);
@@ -148,6 +149,6 @@
   background: rgba(0, 0, 0, 0.03);
 }
 .light .history-tag-btn:hover {
-  background: rgba(16, 185, 129, 0.08);
-  color: #059669;
+  background: var(--sidebar-item-bg);
+  color: var(--accent-color);
 }
