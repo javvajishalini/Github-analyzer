@@ -3,6 +3,7 @@ package com.githubanalyzer.backend.service;
 import com.githubanalyzer.backend.model.AnalysisResult;
 import com.githubanalyzer.backend.model.Repository;
 import com.githubanalyzer.backend.dto.UserProfileDto;
+import com.githubanalyzer.backend.model.UserProfile;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
