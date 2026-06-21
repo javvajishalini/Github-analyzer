@@ -1,0 +1,56 @@
+/* Repositories.css – glass‑morphism table styling */
+
+.repositories-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-h);
+}
+
+.repo-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+.repo-table th,
+.repo-table td {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: none;
+  text-align: left;
+  color: var(--text-h);
+}
+
+.repo-table th {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.repo-table tr:hover td {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.pagination {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination button {
+  background: var(--accent);
+  color: var(--text-h);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
