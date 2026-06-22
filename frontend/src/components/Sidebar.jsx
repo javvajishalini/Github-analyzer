@@ -34,6 +34,11 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
   </svg>
 );
+const IconCompare = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 3h5v5M4 21h5v-5M16 21h5v-5M4 3h5v5M9 8l6 8M9 16l6-8"/>
+  </svg>
+);
 const IconLogout = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -57,6 +62,7 @@ const links = [
   { to: '/repositories', label: 'Repositories',  Icon: IconRepos },
   { to: '/languages',    label: 'Languages',      Icon: IconLanguages },
   { to: '/activity',     label: 'Activity',       Icon: IconActivity },
+  { to: '/compare',      label: 'Compare',        Icon: IconCompare },
   { to: '/search',       label: 'Search',         Icon: IconSearch },
 ];
 

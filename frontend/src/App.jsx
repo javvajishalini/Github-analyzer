@@ -7,6 +7,7 @@ import Repositories from './pages/Repositories';
 import Languages from './pages/Languages';
 import Activity from './pages/Activity';
 import Search from './pages/Search';
+import Compare from './pages/Compare';
 import DarkModeToggle from './components/DarkModeToggle';
 import Logo from './components/Logo';
 import './App.css';
@@ -116,6 +117,7 @@ export default function App() {
           <Route path="/languages" element={<Languages />} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/compare" element={<Compare />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/overview" replace />} />
