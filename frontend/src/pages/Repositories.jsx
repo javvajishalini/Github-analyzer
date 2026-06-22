@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './Repositories.css';
 
 const ChevronUp = () => (
@@ -12,6 +13,27 @@ const ChevronDown = () => (
     <polyline points="6 9 12 15 18 9"/>
   </svg>
 );
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{
+        background: 'var(--tooltip-bg)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 10,
+        padding: '10px 14px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+        fontSize: '0.875rem',
+      }}>
+        <p style={{ margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>Year {label}</p>
+        <p style={{ margin: '4px 0 0', color: '#2563EB', fontWeight: 600 }}>
+          Created: {payload[0].value} Repos
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Repositories() {
   const location = useLocation();
@@ -91,6 +113,21 @@ export default function Repositories() {
     return sortConfig.direction === 'asc' ? <ChevronUp /> : <ChevronDown />;
   };
 
+  const timelineData = React.useMemo(() => {
+    if (!repos || repos.length === 0) return [];
+    const counts = {};
+    repos.forEach(r => {
+      if (r.createdAt) {
+        const year = new Date(r.createdAt).getFullYear();
+        counts[year] = (counts[year] || 0) + 1;
+      }
+    });
+    return Object.keys(counts).sort().map(year => ({
+      year,
+      count: counts[year]
+    }));
+  }, [repos]);
+
   if (loading) {
     return (
       <div className="repositories-page-loading">
@@ -119,6 +156,23 @@ export default function Repositories() {
         </div>
         <span className="repo-count-badge">{repos.length} Repositories found</span>
       </div>
+
+      {timelineData.length > 0 && (
+        <div className="glass-card animate-fade-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
+          <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.15rem' }}>Repository Creation Timeline</h3>
+          <div style={{ width: '100%', height: 250 }}>
+            <ResponsiveContainer>
+              <BarChart data={timelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--divider)" vertical={false} />
+                <XAxis dataKey="year" stroke="var(--text-muted)" />
+                <YAxis stroke="var(--text-muted)" allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                <Bar dataKey="count" fill="#2563EB" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       <div className="table-container animate-fade-in">
         <table className="repo-table">
