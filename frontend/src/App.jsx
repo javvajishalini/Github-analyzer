@@ -9,6 +9,7 @@ import Activity from './pages/Activity';
 import Search from './pages/Search';
 import Compare from './pages/Compare';
 import Achievements from './pages/Achievements';
+import Export from './pages/Export';
 import DarkModeToggle from './components/DarkModeToggle';
 import Logo from './components/Logo';
 import './App.css';
@@ -28,10 +29,13 @@ function Layout() {
 
   return (
     <div className="app-container">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <Sidebar />
       <div className="content-container">
         <Header />
-        <main className="main-content">
+        <main id="main-content" className="main-content">
           <Outlet />
         </main>
       </div>
@@ -120,6 +124,7 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/achievements" element={<Achievements />} />
+          <Route path="/export" element={<Export />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/overview" replace />} />

@@ -50,6 +50,13 @@ const IconAchievements = () => (
     <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
   </svg>
 );
+const IconExport = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
 const IconLogout = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -75,7 +82,8 @@ const links = [
   { to: '/activity',     label: 'Activity',       Icon: IconActivity },
   { to: '/compare',      label: 'Compare',        Icon: IconCompare },
   { to: '/achievements', label: 'Achievements',    Icon: IconAchievements },
-  { to: '/search',       label: 'Search',         Icon: IconSearch },
+  { to: '/export',       label: 'Export',           Icon: IconExport },
+  { to: '/search',       label: 'Search',           Icon: IconSearch },
 ];
 
 /* ── Sidebar Component ──────────────────────────── */
@@ -155,7 +163,7 @@ const Sidebar = () => {
         )}
 
         {/* Main Links */}
-        <div className="sidebar-links" style={{ padding: '0', margin: '0' }}>
+        <div className="sidebar-links">
           {links.map((link) => (
             <NavLink
               key={link.to}

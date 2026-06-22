@@ -1,6 +1,23 @@
 /* =============================================
    APP LAYOUT
    ============================================= */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--gradient-primary);
+  color: white;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-weight: bold;
+  border-bottom-right-radius: 8px;
+  transition: top 0.2s ease;
+  text-decoration: none;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -212,11 +229,30 @@
 /* =============================================
    RESPONSIVE
    ============================================= */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 1.75rem 1.75rem;
+  }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .content-container {
     margin-left: 0;
   }
   .main-content {
     padding: 1.25rem 1rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 1rem 0.75rem;
+  }
+  .login-card {
+    padding: 2.5rem 1.5rem;
   }
 }

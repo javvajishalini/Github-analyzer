@@ -350,3 +350,8 @@
   .stats-row { justify-content: center; }
   .profile-card .details { justify-content: center; }
 }
+@media (max-width: 480px) {
+  .analytics-cards { grid-template-columns: repeat(2, 1fr); }
+  .overview-header-row h2 { font-size: 1.3rem; }
+  .stat-card-value { font-size: 1.5rem; }
+}
