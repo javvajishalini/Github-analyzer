@@ -16,6 +16,7 @@ export default function Activity() {
   const username = location.state?.username || localStorage.getItem('git_analyzer_session');
 
   const [activity, setActivity] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -29,10 +30,20 @@ export default function Activity() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/github/activity/${encodeURIComponent(username)}`);
-        if (!res.ok) throw new Error('Failed to fetch activity logs');
-        const json = await res.json();
-        setActivity(json);
+        
+        // Fetch original activity milestones
+        const resActivity = await fetch(`/api/github/activity/${encodeURIComponent(username)}`);
+        if (!resActivity.ok) throw new Error('Failed to fetch activity logs');
+        const actData = await resActivity.json();
+        setActivity(actData);
+
+        // Fetch new dashboard events
+        const resDash = await fetch(`/api/github/dashboard/${encodeURIComponent(username)}`);
+        if (resDash.ok) {
+          const dashData = await resDash.json();
+          setDashboard(dashData);
+        }
+
       } catch (e) {
         setError(e.message);
       } finally {
@@ -73,14 +84,79 @@ export default function Activity() {
     });
   };
 
+  // Generate last 90 days for heatmap
+  const generateHeatmapDays = () => {
+    const days = [];
+    const today = new Date();
+    for (let i = 89; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const count = dashboard?.heatmap ? (dashboard.heatmap[dateStr] || 0) : 0;
+      days.push({ date: dateStr, count });
+    }
+    return days;
+  };
+
+  const heatmapDays = generateHeatmapDays();
+
+  const getHeatmapColor = (count) => {
+    if (count === 0) return 'rgba(255, 255, 255, 0.05)';
+    if (count < 3) return '#0e4429';
+    if (count < 6) return '#006d32';
+    if (count < 10) return '#26a641';
+    return '#39d353';
+  };
+
   return (
     <div className="activity-page">
       <div className="activity-header">
-        <h2>Activity Milestones</h2>
+        <h2>Activity Dashboard</h2>
         <p className="activity-header-sub">
-          Key repository events for <strong>@{username}</strong>
+          Key repository events and recent activity for <strong>@{username}</strong>
         </p>
       </div>
+
+      {dashboard && (
+        <div className="dashboard-stats-grid animate-fade-in">
+          <div className="glass-card stat-box">
+            <h4>🔥 Current Streak</h4>
+            <div className="stat-value">{dashboard.currentStreak} days</div>
+          </div>
+          <div className="glass-card stat-box">
+            <h4>🏆 Longest Streak</h4>
+            <div className="stat-value">{dashboard.longestStreak} days</div>
+          </div>
+          <div className="glass-card stat-box">
+            <h4>💻 Push Events (90d)</h4>
+            <div className="stat-value">{dashboard.pushEventsCount}</div>
+          </div>
+          <div className="glass-card stat-box">
+            <h4>🔄 Pull Requests (90d)</h4>
+            <div className="stat-value">{dashboard.pullRequestsCount}</div>
+          </div>
+          <div className="glass-card stat-box">
+            <h4>⚠️ Issues (90d)</h4>
+            <div className="stat-value">{dashboard.issuesOpenedCount}</div>
+          </div>
+        </div>
+      )}
+
+      {dashboard && (
+        <div className="glass-card heatmap-section animate-fade-in" style={{marginBottom: '2rem'}}>
+          <h3 className="section-title">90-Day Contribution Heatmap</h3>
+          <div className="heatmap-container">
+            {heatmapDays.map((day, idx) => (
+              <div 
+                key={idx} 
+                className="heatmap-cell"
+                style={{ backgroundColor: getHeatmapColor(day.count) }}
+                title={`${day.date}: ${day.count} events`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="activity-grid animate-fade-in">
         
@@ -166,6 +242,22 @@ export default function Activity() {
         </section>
 
       </div>
+
+      {dashboard && dashboard.recentEvents && dashboard.recentEvents.length > 0 && (
+        <div className="glass-card recent-events-section animate-fade-in">
+          <h3 className="section-title">Recent Event Feed</h3>
+          <ul className="recent-events-list">
+            {dashboard.recentEvents.map(ev => (
+              <li key={ev.id} className="event-item">
+                <span className="event-type">{ev.type.replace('Event', '')}</span>
+                <span className="event-repo"> on <strong>{ev.repoName}</strong></span>
+                <span className="event-date"> {new Date(ev.createdAt).toLocaleDateString()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
     </div>
   );
 }

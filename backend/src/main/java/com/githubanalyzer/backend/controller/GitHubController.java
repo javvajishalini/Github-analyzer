@@ -2,6 +2,7 @@ package com.githubanalyzer.backend.controller;
 
 import com.githubanalyzer.backend.dto.UserProfileDto;
 import com.githubanalyzer.backend.dto.RepoDto;
+import com.githubanalyzer.backend.dto.ActivityDashboardDto;
 import com.githubanalyzer.backend.exception.UserNotFoundException;
 import com.githubanalyzer.backend.model.AnalysisResult;
 import com.githubanalyzer.backend.service.GitHubService;
@@ -53,5 +54,10 @@ public class GitHubController {
                 "recentlyUpdatedRepository", result.getRecentlyUpdatedRepository(),
                 "oldestRepository", result.getOldestRepository()
         ));
+    }
+
+    @GetMapping("/dashboard/{username}")
+    public ResponseEntity<ActivityDashboardDto> getDashboardEvents(@PathVariable String username) throws IOException, InterruptedException {
+        return ResponseEntity.ok(gitHubService.getDashboardEvents(username));
     }
 }

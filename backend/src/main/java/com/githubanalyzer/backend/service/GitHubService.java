@@ -22,7 +22,13 @@ import java.util.Map;
 import java.util.Comparator;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Collections;
 import com.githubanalyzer.backend.dto.RepoDto;
+import com.githubanalyzer.backend.dto.ActivityDashboardDto;
+import com.githubanalyzer.backend.dto.EventDto;
 
 
 
@@ -149,6 +155,118 @@ public class GitHubService {
                         parseOffsetDateTime(r.getUpdatedAt())))
                 .collect(Collectors.toList());
     }
+
+    public ActivityDashboardDto getDashboardEvents(String username) throws IOException, InterruptedException {
+        String clientId = "Ov23liFug0MJzfReQ4Xu";
+        String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
+        String url = BASE_URL + "/users/" + encodeValue(username) + "/events?per_page=100&client_id=" + clientId + "&client_secret=" + clientSecret;
+        String token = System.getenv("GITHUB_TOKEN");
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("User-Agent", "Java-Spring-GitHub-User-Analyzer")
+                .header("Accept", "application/vnd.github+json")
+                .GET();
+
+        if (token != null && !token.isEmpty()) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        ActivityDashboardDto dto = new ActivityDashboardDto();
+        if (response.statusCode() != 200) {
+            // Return empty dto if no events or error (could be 404, etc.)
+            return dto;
+        }
+
+        Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+        List<Map<String, Object>> events = gson.fromJson(response.body(), listType);
+        
+        if (events == null) {
+            return dto;
+        }
+
+        Map<LocalDate, Integer> heatmap = new HashMap<>();
+        int pushCount = 0;
+        int prCount = 0;
+        int issuesCount = 0;
+        List<EventDto> recentEvents = new ArrayList<>();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        for (Map<String, Object> event : events) {
+            String type = (String) event.get("type");
+            String createdAtStr = (String) event.get("created_at");
+            
+            if (createdAtStr != null) {
+                LocalDate date = OffsetDateTime.parse(createdAtStr, formatter).toLocalDate();
+                heatmap.put(date, heatmap.getOrDefault(date, 0) + 1);
+            }
+
+            if ("PushEvent".equals(type)) pushCount++;
+            else if ("PullRequestEvent".equals(type)) prCount++;
+            else if ("IssuesEvent".equals(type)) issuesCount++;
+
+            // Grab top 10 recent events
+            if (recentEvents.size() < 10) {
+                String id = (String) event.get("id");
+                Map<String, Object> repoObj = (Map<String, Object>) event.get("repo");
+                String repoName = repoObj != null ? (String) repoObj.get("name") : "Unknown";
+                recentEvents.add(new EventDto(id, type, repoName, createdAtStr));
+            }
+        }
+
+        // Calculate Streak
+        List<LocalDate> activeDays = new ArrayList<>(heatmap.keySet());
+        Collections.sort(activeDays);
+        int currentStreak = 0;
+        int maxStreak = 0;
+        int tempStreak = 0;
+        LocalDate prevDate = null;
+
+        for (LocalDate date : activeDays) {
+            if (prevDate == null || prevDate.plusDays(1).equals(date)) {
+                tempStreak++;
+            } else if (!prevDate.equals(date)) {
+                tempStreak = 1;
+            }
+            if (tempStreak > maxStreak) {
+                maxStreak = tempStreak;
+            }
+            prevDate = date;
+        }
+        
+        // Calculate current streak from today
+        LocalDate today = LocalDate.now();
+        if (heatmap.containsKey(today)) {
+            currentStreak = 1;
+            LocalDate checkDate = today.minusDays(1);
+            while (heatmap.containsKey(checkDate)) {
+                currentStreak++;
+                checkDate = checkDate.minusDays(1);
+            }
+        } else if (heatmap.containsKey(today.minusDays(1))) {
+            currentStreak = 1;
+            LocalDate checkDate = today.minusDays(2);
+            while (heatmap.containsKey(checkDate)) {
+                currentStreak++;
+                checkDate = checkDate.minusDays(1);
+            }
+        }
+
+        dto.setHeatmap(heatmap);
+        dto.setCurrentStreak(currentStreak);
+        dto.setLongestStreak(maxStreak);
+        dto.setTotalEventsLast90Days(events.size());
+        dto.setPushEventsCount(pushCount);
+        dto.setPullRequestsCount(prCount);
+        dto.setIssuesOpenedCount(issuesCount);
+        dto.setRecentEvents(recentEvents);
+
+        return dto;
+    }
+
     private UserProfile fetchUserProfile(String username) throws IOException, InterruptedException {
         // Use client credentials query parameters to authenticate API calls and increase rate limit to 5000 requests/hr
         String clientId = "Ov23liFug0MJzfReQ4Xu";
