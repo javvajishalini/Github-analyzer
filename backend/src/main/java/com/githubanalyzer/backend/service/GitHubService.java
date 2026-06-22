@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Comparator;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
@@ -38,6 +39,12 @@ public class GitHubService {
     private static final String BASE_URL = "https://api.github.com";
     private final HttpClient httpClient;
     private final Gson gson;
+    
+    // Simple memory cache to prevent rate limit triggers on page navigation
+    private final Map<String, AnalysisResult> analysisCache = new ConcurrentHashMap<>();
+    private final Map<String, List<Repository>> reposCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
+    private static final long CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
     public GitHubService() {
         this.httpClient = HttpClient.newBuilder()
@@ -46,10 +53,19 @@ public class GitHubService {
         this.gson = new Gson();
     }
 
+    private boolean isCacheValid(String username) {
+        Long timestamp = cacheTimestamps.get(username);
+        return timestamp != null && (System.currentTimeMillis() - timestamp) < CACHE_DURATION_MS;
+    }
+
     /**
      * Performs API calls and calculates analytics.
      */
     public AnalysisResult analyzeUser(String username) throws IOException, InterruptedException {
+        if (isCacheValid(username) && analysisCache.containsKey(username)) {
+            return analysisCache.get(username);
+        }
+
         UserProfile profile = fetchUserProfile(username);
         List<Repository> repositories = fetchRepositories(username);
 
@@ -108,10 +124,22 @@ public class GitHubService {
                 .collect(Collectors.toList());
         result.setTop5Repositories(top5);
 
-        // Language Distribution
+        // Language Distribution – exclude repos with no detected language
         Map<String, Long> languages = repositories.stream()
+                .filter(r -> r.getLanguage() != null
+                          && !r.getLanguage().isEmpty()
+                          && !r.getLanguage().equals("Unknown"))
                 .collect(Collectors.groupingBy(Repository::getLanguage, Collectors.counting()));
-        result.setLanguageDistribution(languages);
+
+        // Sort by count descending (LinkedHashMap preserves order)
+        Map<String, Long> sortedLanguages = languages.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        java.util.LinkedHashMap::new));
+        result.setLanguageDistribution(sortedLanguages);
 
         // Distribution of repos (Forked vs Original)
         int forkedCount = (int) repositories.stream().filter(Repository::isFork).count();
@@ -119,6 +147,8 @@ public class GitHubService {
         result.setOriginalReposCount(totalRepos - forkedCount);
         result.setPublicReposCount(totalRepos);
 
+        analysisCache.put(username, result);
+        cacheTimestamps.put(username, System.currentTimeMillis());
         return result;
     }
 
@@ -141,7 +171,14 @@ public class GitHubService {
     // Public API for controller – returns a list of RepoDto for a user
     // ---------------------------------------------------------------------
     public List<RepoDto> getUserRepositoriesDto(String username) throws IOException, InterruptedException {
-        List<Repository> repos = fetchRepositories(username);
+        List<Repository> repos;
+        if (isCacheValid(username) && reposCache.containsKey(username)) {
+            repos = reposCache.get(username);
+        } else {
+            repos = fetchRepositories(username);
+            reposCache.put(username, repos);
+        }
+        
         return repos.stream()
                 .map(r -> new RepoDto(
                         r.getName(),
@@ -157,9 +194,7 @@ public class GitHubService {
     }
 
     public ActivityDashboardDto getDashboardEvents(String username) throws IOException, InterruptedException {
-        String clientId = "Ov23liFug0MJzfReQ4Xu";
-        String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
-        String url = BASE_URL + "/users/" + encodeValue(username) + "/events?per_page=100&client_id=" + clientId + "&client_secret=" + clientSecret;
+        String url = BASE_URL + "/users/" + encodeValue(username) + "/events?per_page=100";
         String token = System.getenv("GITHUB_TOKEN");
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
@@ -268,11 +303,7 @@ public class GitHubService {
     }
 
     private UserProfile fetchUserProfile(String username) throws IOException, InterruptedException {
-        // Use client credentials query parameters to authenticate API calls and increase rate limit to 5000 requests/hr
-        String clientId = "Ov23liFug0MJzfReQ4Xu";
-        String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
-        String url = BASE_URL + "/users/" + encodeValue(username) + "?client_id=" + clientId + "&client_secret=" + clientSecret;
-
+        String url = BASE_URL + "/users/" + encodeValue(username);
         String token = System.getenv("GITHUB_TOKEN");
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
@@ -306,9 +337,7 @@ public class GitHubService {
         boolean hasMore = true;
 
         while (hasMore) {
-            String clientId = "Ov23liFug0MJzfReQ4Xu";
-            String clientSecret = "6c254a07539e74d2ed007789a7b9ae1365712696";
-            String url = BASE_URL + "/users/" + encodeValue(username) + "/repos?per_page=" + perPage + "&page=" + page + "&client_id=" + clientId + "&client_secret=" + clientSecret;
+            String url = BASE_URL + "/users/" + encodeValue(username) + "/repos?per_page=" + perPage + "&page=" + page;
             String token = System.getenv("GITHUB_TOKEN");
 
             HttpRequest.Builder builder = HttpRequest.newBuilder()

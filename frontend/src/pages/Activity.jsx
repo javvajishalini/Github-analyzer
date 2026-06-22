@@ -12,8 +12,10 @@ export default function Activity() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Resolve target username: state, then logged-in session, then null
-  const username = location.state?.username || localStorage.getItem('git_analyzer_session');
+  // Resolve target username: state, then searched user, then logged-in session, then null
+  const username = location.state?.username 
+    || localStorage.getItem('git_analyzer_current_user') 
+    || localStorage.getItem('git_analyzer_session');
 
   const [activity, setActivity] = useState(null);
   const [dashboard, setDashboard] = useState(null);

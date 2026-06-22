@@ -31,7 +31,9 @@ export default function Languages() {
   const navigate = useNavigate();
 
   // Resolve target username: state, then logged-in session, then null
-  const username = location.state?.username || localStorage.getItem('git_analyzer_session');
+  const username = location.state?.username 
+    || localStorage.getItem('git_analyzer_current_user') 
+    || localStorage.getItem('git_analyzer_session');
 
   const [languageData, setLanguageData] = useState([]);
   const [repoLangData, setRepoLangData] = useState([]);

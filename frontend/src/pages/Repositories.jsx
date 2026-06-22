@@ -38,7 +38,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function Repositories() {
   const location = useLocation();
   const navigate = useNavigate();
-  const username = location.state?.username || localStorage.getItem('git_analyzer_session');
+  const username = location.state?.username 
+    || localStorage.getItem('git_analyzer_current_user') 
+    || localStorage.getItem('git_analyzer_session');
 
   const [repos, setRepos] = useState([]);
   const [loading, setLoading] = useState(true);

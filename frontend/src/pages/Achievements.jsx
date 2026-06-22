@@ -350,7 +350,9 @@ function BadgeCard({ def, unlocked, delay }) {
 export default function Achievements() {
   const location = useLocation();
   const navigate = useNavigate();
-  const username = location.state?.username || localStorage.getItem('git_analyzer_session');
+  const username = location.state?.username 
+    || localStorage.getItem('git_analyzer_current_user') 
+    || localStorage.getItem('git_analyzer_session');
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

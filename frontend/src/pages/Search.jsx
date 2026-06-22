@@ -30,9 +30,19 @@ export default function Search() {
     setError(null);
     try {
       // Validate the user exists by calling the profile endpoint
-      const res = await fetch(`/api/github/user/${encodeURIComponent(username.trim())}`);
-      if (!res.ok) {
-        throw new Error('GitHub user not found. Please enter a valid username.');
+      let res;
+      try {
+        res = await fetch(`/api/github/user/${encodeURIComponent(username.trim())}`);
+      } catch (networkErr) {
+        throw new Error('Cannot connect to backend. Make sure start_backend.bat is running on port 8080.');
+      }
+
+      if (res.status === 404) {
+        throw new Error(`GitHub user "${username.trim()}" not found. Please check the username and try again.`);
+      } else if (res.status === 403) {
+        throw new Error('GitHub API rate limit exceeded. Please wait a moment and try again.');
+      } else if (!res.ok) {
+        throw new Error(`Server error (${res.status}). Please make sure the backend is running.`);
       }
       
       // Save search history
@@ -41,6 +51,9 @@ export default function Search() {
       newHistory = [cleanName, ...newHistory.filter(h => h !== cleanName)].slice(0, 8);
       localStorage.setItem('git_analyzer_history', JSON.stringify(newHistory));
       setHistory(newHistory);
+
+      // Persist the searched username so all pages can read it on navigation
+      localStorage.setItem('git_analyzer_current_user', username.trim());
 
       // Navigate to overview page with selected user
       navigate('/overview', { state: { username: username.trim() } });
@@ -53,6 +66,7 @@ export default function Search() {
 
   const handleHistoryClick = (name) => {
     setUsername(name);
+    localStorage.setItem('git_analyzer_current_user', name);
     navigate('/overview', { state: { username: name } });
   };
 

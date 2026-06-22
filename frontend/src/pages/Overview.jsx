@@ -33,6 +33,8 @@ const CHART_COLORS = [
 /* ── Custom Pie Tooltip ── */
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
+    const total = payload[0].payload.total || 1;
+    const pct = ((payload[0].value / total) * 100).toFixed(1);
     return (
       <div style={{
         background: 'var(--tooltip-bg)',
@@ -41,12 +43,16 @@ const CustomTooltip = ({ active, payload }) => {
         padding: '10px 14px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
         fontSize: '0.875rem',
+        minWidth: '130px',
       }}>
         <p style={{ margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>
           {payload[0].name}
         </p>
-        <p style={{ margin: '4px 0 0', color: 'var(--text-muted)' }}>
-          {payload[0].value} repos
+        <p style={{ margin: '4px 0 0', color: '#60a5fa' }}>
+          {pct}% of repos
+        </p>
+        <p style={{ margin: '2px 0 0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+          {payload[0].value} {payload[0].value === 1 ? 'repo' : 'repos'}
         </p>
       </div>
     );
@@ -81,7 +87,9 @@ const StatCard = ({ label, value, icon, colorClass, delay = 0 }) => (
 export default function Overview() {
   const location = useLocation();
   const navigate = useNavigate();
-  const username = location.state?.username || localStorage.getItem('git_analyzer_session');
+  const username = location.state?.username 
+    || localStorage.getItem('git_analyzer_current_user') 
+    || localStorage.getItem('git_analyzer_session');
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,8 +191,11 @@ export default function Overview() {
   const mostActiveYear = computeMostActiveYear();
 
   const languageData = Object.entries(languageDistribution || {})
-    .map(([lang, count]) => ({ name: lang || 'Unknown', value: count }))
+    .filter(([lang]) => lang && lang !== 'Unknown' && lang !== 'null')
+    .map(([lang, count]) => ({ name: lang, value: count }))
     .sort((a, b) => b.value - a.value);
+  const langTotal = languageData.reduce((sum, d) => sum + d.value, 0);
+  const languageDataWithTotal = languageData.map(d => ({ ...d, total: langTotal }));
 
   const statCards = [
     { label: 'Total Repos',   value: totalRepos,  icon: '📦', colorClass: 'blue'   },
@@ -308,27 +319,27 @@ export default function Overview() {
             <span style={{ fontSize: '1.1rem' }}>🌐</span>
             Language Distribution
           </div>
-          {languageData.length > 0 ? (
+          {languageDataWithTotal.length > 0 ? (
             <div style={{ width: '100%', height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={languageData}
+                    data={languageDataWithTotal}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
                     outerRadius={95}
-                    innerRadius={38}
+                    innerRadius={42}
                     paddingAngle={2}
                     animationBegin={0}
                     animationDuration={800}
                     label={({ name, percent }) =>
-                      percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
+                      percent > 0.04 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
                     }
-                    labelLine={false}
+                    labelLine={true}
                   >
-                    {languageData.map((_, i) => (
+                    {languageDataWithTotal.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
@@ -336,17 +347,24 @@ export default function Overview() {
                   <Legend
                     iconType="circle"
                     iconSize={8}
-                    formatter={(v) => (
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>{v}</span>
-                    )}
+                    formatter={(v, entry) => {
+                      const pct = langTotal > 0 ? ((entry.payload.value / langTotal) * 100).toFixed(0) : 0;
+                      return (
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 500 }}>
+                          {v} <span style={{ color: 'var(--text-muted)' }}>({pct}%)</span>
+                        </span>
+                      );
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              No language data available.
-            </p>
+            <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
+              <p style={{ fontSize: '0.9rem', margin: 0 }}>No language data available for this user.</p>
+              <p style={{ fontSize: '0.8rem', marginTop: '0.25rem', opacity: 0.7 }}>All repositories may be forks or have no detected language.</p>
+            </div>
           )}
         </div>
 

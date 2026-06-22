@@ -1,7 +1,10 @@
-# Backend Maven output
+# Backend Maven build output
 backend/target/
 
-# Frontend node modules and build output
+# Stray root-level target folder (should not exist)
+target/
+
+# Frontend dependencies and build output
 frontend/node_modules/
 frontend/dist/
 
@@ -16,3 +19,6 @@ frontend/dist/
 # OS specific files
 Thumbs.db
 desktop.ini
+
+# Local environment secrets - NEVER commit this
+.env

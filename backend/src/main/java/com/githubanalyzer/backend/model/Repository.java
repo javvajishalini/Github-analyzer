@@ -43,7 +43,7 @@ public class Repository {
     public int getForks() { return forks; }
     public void setForks(int forks) { this.forks = forks; }
 
-    public String getLanguage() { return language != null ? language : "Unknown"; }
+    public String getLanguage() { return language; }
     public void setLanguage(String language) { this.language = language; }
 
     public boolean isFork() { return isFork; }
