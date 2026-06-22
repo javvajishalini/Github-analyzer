@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Activity.css';
 
+const IconStar = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, position: 'relative', top: 2 }}>
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+);
+
 export default function Activity() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,7 +46,7 @@ export default function Activity() {
     return (
       <div className="activity-page-loading">
         <div className="spinner" />
-        <p>Analyzing developer activity metadata...</p>
+        <p>Analyzing developer activity milestones...</p>
       </div>
     );
   }
@@ -69,14 +75,17 @@ export default function Activity() {
 
   return (
     <div className="activity-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2>@{username}'s Activity Milestones</h2>
+      <div className="activity-header">
+        <h2>Activity Milestones</h2>
+        <p className="activity-header-sub">
+          Key repository events for <strong>@{username}</strong>
+        </p>
       </div>
 
       <div className="activity-grid animate-fade-in">
         
         {/* Newest Repository */}
-        <section className="activity-card-section">
+        <section className="activity-card-section" style={{ animationDelay: '0ms' }}>
           <div className="card-header-accent green" />
           <div className="activity-card-body">
             <span className="card-meta-tag green-tag">🌱 Newest Project</span>
@@ -93,7 +102,7 @@ export default function Activity() {
                 <p className="activity-repo-desc">{newestRepository.description || 'No description provided.'}</p>
                 <div className="activity-repo-footer">
                   <span>Created: <strong>{formatDate(newestRepository.createdAt || newestRepository.created_at)}</strong></span>
-                  <span>⭐ {newestRepository.stars}</span>
+                  <span><IconStar /> {newestRepository.stars}</span>
                 </div>
               </>
             ) : (
@@ -103,7 +112,7 @@ export default function Activity() {
         </section>
 
         {/* Recently Updated Repository */}
-        <section className="activity-card-section">
+        <section className="activity-card-section" style={{ animationDelay: '80ms' }}>
           <div className="card-header-accent purple" />
           <div className="activity-card-body">
             <span className="card-meta-tag purple-tag">⚡ Recently Active</span>
@@ -120,7 +129,7 @@ export default function Activity() {
                 <p className="activity-repo-desc">{recentlyUpdatedRepository.description || 'No description provided.'}</p>
                 <div className="activity-repo-footer">
                   <span>Updated: <strong>{formatDate(recentlyUpdatedRepository.updatedAt || recentlyUpdatedRepository.updated_at)}</strong></span>
-                  <span>⭐ {recentlyUpdatedRepository.stars}</span>
+                  <span><IconStar /> {recentlyUpdatedRepository.stars}</span>
                 </div>
               </>
             ) : (
@@ -130,7 +139,7 @@ export default function Activity() {
         </section>
 
         {/* Oldest Repository */}
-        <section className="activity-card-section">
+        <section className="activity-card-section" style={{ animationDelay: '160ms' }}>
           <div className="card-header-accent orange" />
           <div className="activity-card-body">
             <span className="card-meta-tag orange-tag">🏛️ Oldest Project</span>
@@ -147,7 +156,7 @@ export default function Activity() {
                 <p className="activity-repo-desc">{oldestRepository.description || 'No description provided.'}</p>
                 <div className="activity-repo-footer">
                   <span>Created: <strong>{formatDate(oldestRepository.createdAt || oldestRepository.created_at)}</strong></span>
-                  <span>⭐ {oldestRepository.stars}</span>
+                  <span><IconStar /> {oldestRepository.stars}</span>
                 </div>
               </>
             ) : (

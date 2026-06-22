@@ -2,6 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+/* ── Custom Pie Tooltip ── */
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{
+        background: 'var(--tooltip-bg)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 10,
+        padding: '10px 14px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+        fontSize: '0.875rem',
+      }}>
+        <p style={{ margin: 0, fontWeight: 700, color: 'var(--text-primary)' }}>
+          {payload[0].name}
+        </p>
+        <p style={{ margin: '4px 0 0', color: 'var(--text-muted)' }}>
+          {payload[0].value} bytes
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Languages() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,7 +65,7 @@ export default function Languages() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '350px', gap: '1.5rem', color: 'var(--text-h)' }}>
+      <div className="page-loading">
         <div className="spinner" />
         <p>Loading developer language distribution...</p>
       </div>
@@ -50,8 +74,8 @@ export default function Languages() {
 
   if (error || !username) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '350px', gap: '1.5rem', color: 'var(--text-h)' }}>
-        <p style={{ color: '#e74c3c' }}>⚠️ {error}</p>
+      <div className="page-error">
+        <p className="error-text">⚠️ {error}</p>
         <button className="search-redirect-btn" onClick={() => navigate('/search')}>
           Go to Search Page
         </button>
@@ -59,27 +83,33 @@ export default function Languages() {
     );
   }
 
-  const COLORS = ['#6366f1', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#3b82f6', '#14b8a6', '#84cc16'];
+  const CHART_COLORS = [
+    '#2563EB', '#7C3AED', '#06B6D4', '#10b981',
+    '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6',
+    '#14b8a6', '#f97316'
+  ];
 
   return (
-    <div className="languages-page" style={{ padding: '2.5rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-h)', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>@{username}'s Language Distribution</h2>
-        <span className="repo-count-badge">{languageData.length} Languages</span>
+    <div style={{ padding: '2rem 0', maxWidth: '1200px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+      
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Language Distribution</h2>
+          <p className="page-subtitle">Showing languages across public repos for <strong>@{username}</strong></p>
+        </div>
+        <div className="badge badge-blue">
+          {languageData.length} Languages
+        </div>
       </div>
 
-      <div className="animate-fade-in" style={{
-        background: 'rgba(255, 255, 255, 0.04)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '14px',
-        padding: '2.5rem',
+      <div className="glass-card animate-fade-in" style={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        padding: '3rem 2rem'
       }}>
         {languageData.length > 0 ? (
-          <div style={{ width: '100%', height: 420 }}>
+          <div style={{ width: '100%', height: 500 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie 
@@ -88,20 +118,30 @@ export default function Languages() {
                   nameKey="name" 
                   cx="50%" 
                   cy="50%" 
-                  outerRadius={140} 
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  outerRadius={180}
+                  innerRadius={70}
+                  paddingAngle={2}
+                  animationBegin={0}
+                  animationDuration={800}
+                  label={({ name, percent }) => percent > 0.03 ? `${name} (${(percent * 100).toFixed(0)}%)` : ''}
+                  labelLine={false}
                 >
                   {languageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: 'var(--tooltip-bg)', border: '1px solid var(--border-color)', color: 'var(--text-h)' }} />
-                <Legend formatter={(value) => <span style={{ color: 'var(--text-h)', fontWeight: '600' }}>{value}</span>} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{ paddingTop: '2rem' }}
+                  formatter={(value) => <span style={{ color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '6px', fontSize: '0.9rem' }}>{value}</span>} 
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <p style={{ color: 'var(--text-p)' }}>No language data available.</p>
+          <p style={{ color: 'var(--text-muted)' }}>No language data available.</p>
         )}
       </div>
     </div>

@@ -2,6 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Search.css';
 
+const SearchIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <path d="m21 21-4.35-4.35"/>
+  </svg>
+);
+
+const SearchShieldIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <circle cx="12" cy="11" r="3"/>
+  </svg>
+);
+
 export default function Search() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,21 +59,32 @@ export default function Search() {
   return (
     <div className="search-page-container">
       <div className="search-card">
-        <h1 className="search-heading">GitHub User Search</h1>
-        <p className="search-subheading">Analyze public repositories, languages, stars, and activity diagnostics.</p>
+        
+        <div className="search-icon-shield">
+          <SearchShieldIcon />
+        </div>
+
+        <h1 className="search-heading">Developer Search</h1>
+        <p className="search-subheading">Analyze public repositories, language distribution, and activity diagnostics.</p>
         
         <form className="search-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Enter GitHub username (e.g., octocat)"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            disabled={loading}
-            className="search-input"
-            required
-          />
+          <div className="search-input-wrapper">
+            <div className="search-input-icon">
+              <SearchIcon />
+            </div>
+            <input
+              type="text"
+              placeholder="Enter GitHub username (e.g., torvalds)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+              className="search-input"
+              required
+            />
+          </div>
+          
           <button type="submit" disabled={loading} className="search-button">
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? 'Analyzing Profile...' : 'Analyze Profile'}
           </button>
         </form>
 

@@ -1,149 +1,145 @@
-/* Activity.css */
+/* Activity.css – Premium SaaS Timeline/Cards */
+
 .activity-page {
-  padding: 2.5rem;
+  padding: 2rem 0;
   max-width: 1200px;
   margin: 0 auto;
-  color: var(--text-h);
+  color: var(--text-primary);
   box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
 }
 
+.activity-header {
+  margin-bottom: 2rem;
+}
+.activity-header h2 {
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.activity-header-sub {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0.3rem 0 0;
+}
+
+/* ── Grid Layout ── */
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* ── Activity Cards ── */
+.activity-card-section {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.activity-card-section:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card-header-accent {
+  height: 6px;
+  width: 100%;
+}
+.card-header-accent.green  { background: linear-gradient(90deg, #10b981, #34d399); }
+.card-header-accent.purple { background: linear-gradient(90deg, #7C3AED, #a855f7); }
+.card-header-accent.orange { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.activity-card-body {
+  padding: 2rem 1.75rem;
+}
+
+.card-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
+}
+.card-meta-tag.green-tag  { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.card-meta-tag.purple-tag { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+.card-meta-tag.orange-tag { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.activity-repo-link {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.15s;
+}
+.activity-repo-link:hover {
+  color: #60a5fa;
+}
+.light .activity-repo-link:hover {
+  color: #2563EB;
+}
+
+.activity-repo-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+  min-height: 2.7rem;
+}
+
+.activity-repo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--divider);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.activity-repo-footer strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.no-activity-data {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  padding: 1rem 0;
+  font-style: italic;
+}
+
+/* ── Loading / Error ── */
 .activity-page-loading,
 .activity-page-error {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 350px;
-  gap: 1.5rem;
-  color: var(--text-h);
+  min-height: 380px;
+  gap: 1.25rem;
+  color: var(--text-primary);
+  text-align: center;
 }
-
-.activity-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-top: 1rem;
-}
-
-.activity-card-section {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-}
-
-.activity-card-section:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--card-shadow-hover);
-  border-color: var(--card-border-hover);
-}
-
-.card-header-accent {
-  height: 4px;
-  width: 100%;
-}
-
-.card-header-accent.green {
-  background: linear-gradient(90deg, #06b6d4 0%, #10b981 100%); /* Cyan-Teal gradient */
-}
-
-.card-header-accent.purple {
-  background: var(--text-gradient); /* Theme Pink-Violet gradient */
-}
-
-.card-header-accent.orange {
-  background: linear-gradient(90deg, #f59e0b 0%, #f43f5e 100%); /* Amber-Coral gradient */
-}
-
-.activity-card-body {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.card-meta-tag {
-  align-self: flex-start;
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1.5rem;
-}
-
-.card-meta-tag.green-tag {
-  background: rgba(6, 182, 212, 0.12);
-  color: #06b6d4;
-}
-
-.card-meta-tag.purple-tag {
-  background: rgba(168, 85, 247, 0.12);
-  color: #a855f7;
-}
-
-.card-meta-tag.orange-tag {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
-}
-
-.activity-repo-link {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-h);
-  text-decoration: none;
-  margin-bottom: 0.75rem;
-  transition: color 0.2s;
-}
-
-.activity-repo-link:hover {
-  color: var(--accent-color);
-  text-decoration: underline;
-}
-
-.activity-repo-desc {
-  font-size: 0.9rem;
-  color: var(--text-p);
-  line-height: 1.5;
-  margin: 0 0 2rem 0;
-}
-
-.activity-repo-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--border-color);
-  padding-top: 1.25rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.825rem;
-  color: var(--text-p);
-}
-
-.no-activity-data {
-  color: var(--text-p);
-  font-style: italic;
+.activity-page-loading p,
+.activity-page-error p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
   margin: 0;
-}
-
-/* Light mode overrides */
-.light .activity-card-section {
-  background: var(--card-bg);
-  box-shadow: var(--card-shadow);
-}
-.light .activity-repo-footer {
-  border-color: var(--border-color);
-}
-.light .card-meta-tag.purple-tag {
-  background: rgba(124, 58, 237, 0.08);
-  color: #7c3aed;
-}
-.light .activity-repo-link:hover {
-  color: #7c3aed;
 }
