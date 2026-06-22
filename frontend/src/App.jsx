@@ -8,30 +8,10 @@ import Languages from './pages/Languages';
 import Activity from './pages/Activity';
 import Search from './pages/Search';
 import DarkModeToggle from './components/DarkModeToggle';
+import Logo from './components/Logo';
 import './App.css';
 
-/* ── Inline Logo (same as sidebar but larger) ── */
-const LoginLogo = () => (
-  <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="18" cy="13" r="9" fill="url(#loginLogoGrad)" />
-    <polygon points="11,7 8,3 14,6" fill="url(#loginLogoGrad)" />
-    <polygon points="25,7 28,3 22,6" fill="url(#loginLogoGrad)" />
-    <circle cx="15" cy="12" r="1.4" fill="white" fillOpacity="0.9" />
-    <circle cx="21" cy="12" r="1.4" fill="white" fillOpacity="0.9" />
-    <path d="M12 20 Q10 26 9 32" stroke="url(#loginLogoGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M18 22 Q18 27 18 33" stroke="url(#loginLogoGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M24 20 Q26 26 27 32" stroke="url(#loginLogoGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-    <rect x="13" y="17" width="3" height="5" rx="1" fill="white" fillOpacity="0.75"/>
-    <rect x="17" y="14" width="3" height="8" rx="1" fill="white" fillOpacity="0.95"/>
-    <rect x="21" y="19" width="3" height="3" rx="1" fill="white" fillOpacity="0.6"/>
-    <defs>
-      <linearGradient id="loginLogoGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#2563EB"/>
-        <stop offset="100%" stopColor="#7C3AED"/>
-      </linearGradient>
-    </defs>
-  </svg>
-);
+
 
 const GitHubIcon = () => (
   <svg height="20" viewBox="0 0 16 16" width="20" fill="currentColor">
@@ -90,9 +70,7 @@ function Login() {
       <div className="login-card animate-fade-in">
         {/* Logo + brand name */}
         <div className="login-logo-wrap">
-          <div className="github-icon-shield">
-            <LoginLogo />
-          </div>
+          <Logo style={{ width: '80px', height: '80px', flexShrink: 0, boxShadow: '0 8px 28px rgba(37, 99, 235, 0.38), 0 0 0 1px rgba(255,255,255,0.08) inset', borderRadius: '20px' }} />
         </div>
 
         <h1 className="login-title">
