@@ -20,6 +20,7 @@ export default function Search() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('git_analyzer_history')) || []);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -35,10 +36,11 @@ export default function Search() {
       }
       
       // Save search history
-      let history = JSON.parse(localStorage.getItem('git_analyzer_history')) || [];
+      let newHistory = [...history];
       const cleanName = username.trim().toLowerCase();
-      history = [cleanName, ...history.filter(h => h !== cleanName)].slice(0, 8);
-      localStorage.setItem('git_analyzer_history', JSON.stringify(history));
+      newHistory = [cleanName, ...newHistory.filter(h => h !== cleanName)].slice(0, 8);
+      localStorage.setItem('git_analyzer_history', JSON.stringify(newHistory));
+      setHistory(newHistory);
 
       // Navigate to overview page with selected user
       navigate('/overview', { state: { username: username.trim() } });
@@ -54,7 +56,10 @@ export default function Search() {
     navigate('/overview', { state: { username: name } });
   };
 
-  const history = JSON.parse(localStorage.getItem('git_analyzer_history')) || [];
+  const clearHistory = () => {
+    localStorage.removeItem('git_analyzer_history');
+    setHistory([]);
+  };
 
   return (
     <div className="search-page-container">
@@ -92,7 +97,22 @@ export default function Search() {
 
         {history.length > 0 && (
           <div className="search-history">
-            <h3>Recent Searches</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>Recent Searches</h3>
+              <button 
+                onClick={clearHistory}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Clear History
+              </button>
+            </div>
             <div className="history-tags">
               {history.map((name) => (
                 <button
