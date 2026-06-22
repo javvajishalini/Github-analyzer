@@ -86,9 +86,14 @@ export default function Overview() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     if (!username) { setError('Please search for a GitHub user first.'); setLoading(false); return; }
+    
+    const savedProfiles = JSON.parse(localStorage.getItem('git_analyzer_bookmarks_users') || '[]');
+    setIsBookmarked(savedProfiles.some(p => p.username.toLowerCase() === username.toLowerCase()));
+
     const fetchData = async () => {
       try {
         setLoading(true); setError(null);
@@ -100,6 +105,21 @@ export default function Overview() {
     };
     fetchData();
   }, [username]);
+
+  const toggleBookmark = () => {
+    let savedProfiles = JSON.parse(localStorage.getItem('git_analyzer_bookmarks_users') || '[]');
+    if (isBookmarked) {
+      savedProfiles = savedProfiles.filter(p => p.username.toLowerCase() !== username.toLowerCase());
+    } else {
+      savedProfiles.push({
+        username: data.profile.username,
+        avatarUrl: data.profile.avatarUrl
+      });
+    }
+    localStorage.setItem('git_analyzer_bookmarks_users', JSON.stringify(savedProfiles));
+    setIsBookmarked(!isBookmarked);
+    window.dispatchEvent(new Event('bookmarksUpdated'));
+  };
 
   if (loading) {
     return (
@@ -164,7 +184,31 @@ export default function Overview() {
           <img src={profile.avatarUrl} alt="Avatar" className="avatar" />
         </div>
         <div className="info">
-          <h2>{profile.name || profile.username}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <h2>{profile.name || profile.username}</h2>
+            <button 
+              onClick={toggleBookmark}
+              style={{
+                background: isBookmarked ? 'rgba(37, 99, 235, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                color: isBookmarked ? '#60a5fa' : 'var(--text-secondary)',
+                border: `1px solid ${isBookmarked ? 'rgba(37, 99, 235, 0.3)' : 'var(--border-color)'}`,
+                padding: '6px 12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              {isBookmarked ? 'Bookmarked' : 'Bookmark User'}
+            </button>
+          </div>
           <p className="username">@{profile.username}</p>
           {profile.bio && <p className="bio">{profile.bio}</p>}
           <p className="details">

@@ -34,6 +34,11 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
   </svg>
 );
+const IconBookmark = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
 const IconCompare = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 3h5v5M4 21h5v-5M16 21h5v-5M4 3h5v5M9 8l6 8M9 16l6-8"/>
@@ -68,15 +73,26 @@ const links = [
 
 /* ── Sidebar Component ──────────────────────────── */
 const Sidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [bookmarkedUsers, setBookmarkedUsers] = useState([]);
+  const [bookmarkedRepos, setBookmarkedRepos] = useState([]);
   const navigate = useNavigate();
   const currentUser = localStorage.getItem('git_analyzer_session');
-  const [isOpen, setIsOpen] = useState(false);
 
-  // Close sidebar on route change on mobile
+  const loadBookmarks = () => {
+    setBookmarkedUsers(JSON.parse(localStorage.getItem('git_analyzer_bookmarks_users') || '[]'));
+    setBookmarkedRepos(JSON.parse(localStorage.getItem('git_analyzer_bookmarks_repos') || '[]'));
+  };
+
   useEffect(() => {
+    loadBookmarks();
+    window.addEventListener('bookmarksUpdated', loadBookmarks);
     const close = () => setIsOpen(false);
     window.addEventListener('popstate', close);
-    return () => window.removeEventListener('popstate', close);
+    return () => {
+      window.removeEventListener('bookmarksUpdated', loadBookmarks);
+      window.removeEventListener('popstate', close);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -131,29 +147,57 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* Nav links */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">Navigation</div>
-          <ul className="sidebar-list">
-            {links.map(({ to, label, Icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  onClick={closeSidebar}
-                  className={({ isActive }) =>
-                    isActive ? 'sidebar-link active' : 'sidebar-link'
-                  }
-                >
-                  <span className="sidebar-link-icon">
-                    <Icon />
-                  </span>
-                  {label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        {/* Main Links */}
+        <div className="sidebar-links" style={{ padding: '0', margin: '0' }}>
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={closeSidebar}
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            >
+              <span className="sidebar-link-icon">
+                <link.Icon />
+              </span>
+              {link.label}
+            </NavLink>
+          ))}
         </div>
 
+        {/* Bookmarks Section */}
+        {(bookmarkedUsers.length > 0 || bookmarkedRepos.length > 0) && (
+          <div className="sidebar-bookmarks" style={{ padding: '0 1.5rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+            <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Bookmarks</h4>
+            
+            {bookmarkedUsers.length > 0 && (
+              <div className="bookmark-group" style={{ marginBottom: '1rem' }}>
+                {bookmarkedUsers.map((u, i) => (
+                  <div key={i} onClick={() => {
+                    navigate('/overview', { state: { username: u.username } });
+                    setIsOpen(false);
+                  }} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '6px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    <img src={u.avatarUrl} alt="av" style={{ width: 20, height: 20, borderRadius: '50%' }} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{u.username}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {bookmarkedRepos.length > 0 && (
+              <div className="bookmark-group">
+                {bookmarkedRepos.map((r, i) => (
+                  <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', padding: '6px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    <IconBookmark />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="sidebar-spacer" style={{ flexGrow: 1 }} />
+        
         {/* Logout */}
         <div className="sidebar-footer">
           <button

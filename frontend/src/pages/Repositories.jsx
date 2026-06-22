@@ -23,7 +23,25 @@ export default function Repositories() {
   const [error, setError] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'stars', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [bookmarkedRepos, setBookmarkedRepos] = useState([]);
   const pageSize = 10;
+
+  useEffect(() => {
+    setBookmarkedRepos(JSON.parse(localStorage.getItem('git_analyzer_bookmarks_repos') || '[]'));
+  }, []);
+
+  const toggleBookmarkRepo = (repo) => {
+    let saved = [...bookmarkedRepos];
+    const isBookmarked = saved.some(r => r.name === repo.name);
+    if (isBookmarked) {
+      saved = saved.filter(r => r.name !== repo.name);
+    } else {
+      saved.push({ name: repo.name, owner: username, url: repo.htmlUrl });
+    }
+    localStorage.setItem('git_analyzer_bookmarks_repos', JSON.stringify(saved));
+    setBookmarkedRepos(saved);
+    window.dispatchEvent(new Event('bookmarksUpdated'));
+  };
 
   useEffect(() => {
     if (!username) { setError('Please search for a GitHub user first.'); setLoading(false); return; }
@@ -136,10 +154,29 @@ export default function Repositories() {
                 </td>
                 <td className="star-cell">★ {repo.stars}</td>
                 <td className="fork-cell">⎇ {repo.forks}</td>
-                <td>
+                <td style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <a href={repo.htmlUrl} target="_blank" rel="noopener noreferrer" className="view-link">
                     View ↗
                   </a>
+                  <button 
+                    onClick={() => toggleBookmarkRepo(repo)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: bookmarkedRepos.some(r => r.name === repo.name) ? '#fbbf24' : 'var(--text-muted)',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'color 0.2s ease',
+                    }}
+                    title="Bookmark Repository"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarkedRepos.some(r => r.name === repo.name) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </button>
                 </td>
               </tr>
             ))}
