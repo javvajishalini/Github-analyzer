@@ -214,6 +214,26 @@
   gap: 1.5rem;
 }
 
+.overview-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* ── Insights Card ── */
+.insights-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.insights-card h3::before {
+  content: '🔍';
+  font-size: 1.1rem;
+}
+
 .grid-card {
   background: var(--card-bg);
   backdrop-filter: blur(16px);
@@ -322,6 +342,7 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .overview-grid { grid-template-columns: 1fr; }
+  .overview-stats-grid { grid-template-columns: 1fr; }
   .analytics-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 }
 @media (max-width: 600px) {

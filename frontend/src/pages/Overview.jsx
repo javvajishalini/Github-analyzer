@@ -141,11 +141,46 @@ export default function Overview() {
     );
   }
 
+  const computeMostUsedLanguage = () => {
+    if (!data || !data.languageDistribution) return 'N/A';
+    const langs = Object.entries(data.languageDistribution).sort((a, b) => b[1] - a[1]);
+    return langs.length > 0 ? langs[0][0] : 'N/A';
+  };
+
+  const computeAccountAge = () => {
+    if (!data || !data.profile.createdAt) return 'N/A';
+    const created = new Date(data.profile.createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now - created);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffYears = Math.floor(diffDays / 365);
+    const remainingDays = diffDays % 365;
+    if (diffYears > 0) return `${diffYears} yrs ${remainingDays} days`;
+    return `${diffDays} days`;
+  };
+
+  const computeMostActiveYear = () => {
+    if (!data || !data.repositories) return 'N/A';
+    const yearCounts = {};
+    data.repositories.forEach(r => {
+      if (r.updatedAt) {
+        const yr = new Date(r.updatedAt).getFullYear();
+        yearCounts[yr] = (yearCounts[yr] || 0) + 1;
+      }
+    });
+    const sortedYears = Object.entries(yearCounts).sort((a, b) => b[1] - a[1]);
+    return sortedYears.length > 0 ? sortedYears[0][0] : 'N/A';
+  };
+
   const {
     profile, totalRepos, totalStars, totalForks,
     avgStars, avgForks, mostStarredRepository,
     mostForkedRepository, languageDistribution
   } = data;
+
+  const mostUsedLang = computeMostUsedLanguage();
+  const accountAge = computeAccountAge();
+  const mostActiveYear = computeMostActiveYear();
 
   const languageData = Object.entries(languageDistribution || {})
     .map(([lang, count]) => ({ name: lang || 'Unknown', value: count }))
@@ -234,8 +269,40 @@ export default function Overview() {
       </section>
 
       {/* Grid: chart + standouts */}
-      <div className="overview-grid animate-fade-in">
-        {/* Language Pie */}
+      <div className="overview-stats-grid animate-fade-in" style={{ animationDelay: '100ms' }}>
+        
+        {/* Profile Insights Card */}
+        <div className="glass-card insights-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>Profile Insights</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Account Age</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{accountAge}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Most Active Year</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{mostActiveYear}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Most Used Language</div>
+              <div style={{ fontWeight: 700, color: '#a78bfa' }}>{mostUsedLang}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Most Starred Repo</div>
+              <div style={{ fontWeight: 700, color: '#fbbf24', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={data.mostStarredRepository?.name || 'N/A'}>
+                {data.mostStarredRepository?.name || 'N/A'}
+              </div>
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Followers / Following Ratio</div>
+              <div style={{ fontWeight: 700, color: '#60a5fa' }}>
+                {profile.following > 0 ? (profile.followers / profile.following).toFixed(2) : profile.followers}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Existing Donut Chart */}
         <div className="grid-card">
           <div className="grid-card-title">
             <span style={{ fontSize: '1.1rem' }}>🌐</span>
