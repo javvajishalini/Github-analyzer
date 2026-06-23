@@ -158,6 +158,7 @@ public class GitHubService {
                 profile.getAvatarUrl(),
                 profile.getName(),
                 profile.getUsername(),
+                profile.getBlog(),
                 profile.getBio(),
                 profile.getLocation(),
                 profile.getCreatedAt(),

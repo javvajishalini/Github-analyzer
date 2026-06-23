@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import SuggestionsCard from '../components/SuggestionsCard';
 
 /* ── PDF Export ── */
 const exportPDF = async (username) => {
@@ -417,6 +418,9 @@ export default function Overview() {
             )}
           </div>
         </div>
+
+        {/* Suggestions Card */}
+        <SuggestionsCard username={username} />
       </div>
     </div>
   );

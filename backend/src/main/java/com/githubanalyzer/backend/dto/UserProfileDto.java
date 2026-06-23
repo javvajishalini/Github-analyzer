@@ -4,6 +4,7 @@ public class UserProfileDto {
     private String avatarUrl;
     private String name;
     private String login;
+    private String blog;
     private String bio;
     private String location;
     private String createdAt;
@@ -13,10 +14,11 @@ public class UserProfileDto {
 
     public UserProfileDto() {}
 
-    public UserProfileDto(String avatarUrl, String name, String login, String bio, String location, String createdAt, int followers, int following, int publicRepos) {
+    public UserProfileDto(String avatarUrl, String name, String login, String blog, String bio, String location, String createdAt, int followers, int following, int publicRepos) {
         this.avatarUrl = avatarUrl;
         this.name = name;
         this.login = login;
+        this.blog = blog;
         this.bio = bio;
         this.location = location;
         this.createdAt = createdAt;
@@ -32,6 +34,8 @@ public class UserProfileDto {
     public void setName(String name) { this.name = name; }
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
+    public String getBlog() { return blog; }
+    public void setBlog(String blog) { this.blog = blog; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
     public String getLocation() { return location; }

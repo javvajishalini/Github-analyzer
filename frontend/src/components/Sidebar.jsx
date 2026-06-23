@@ -153,7 +153,16 @@ const Sidebar = () => {
 
         {/* Current user chip */}
         {currentUser && (
-          <div className="sidebar-user">
+          <div 
+            className="sidebar-user" 
+            onClick={() => {
+              localStorage.removeItem('git_analyzer_current_user');
+              navigate('/overview', { state: { username: currentUser } });
+              setIsOpen(false);
+            }}
+            style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+            title="Go to My Profile"
+          >
             <div className="sidebar-user-avatar">{initials}</div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-label">Signed in as</div>

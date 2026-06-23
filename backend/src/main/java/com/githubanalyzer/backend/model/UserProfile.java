@@ -12,6 +12,9 @@ public class UserProfile {
     @SerializedName("avatar_url")
     private String avatarUrl;
 
+    @SerializedName("blog")
+    private String blog;
+
     @SerializedName("bio")
     private String bio;
 
@@ -39,6 +42,9 @@ public class UserProfile {
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public String getBlog() { return blog; }
+    public void setBlog(String blog) { this.blog = blog; }
 
     public String getBio() { return bio != null ? bio : "N/A"; }
     public void setBio(String bio) { this.bio = bio; }

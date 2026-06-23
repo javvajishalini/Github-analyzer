@@ -30,6 +30,12 @@ public class Repository {
     @SerializedName("html_url")
     private String htmlUrl;
 
+    @SerializedName("has_wiki")
+    private boolean hasWiki;
+
+    @SerializedName("license")
+    private Object license;
+
     // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -57,4 +63,10 @@ public class Repository {
 
     public String getHtmlUrl() { return htmlUrl; }
     public void setHtmlUrl(String htmlUrl) { this.htmlUrl = htmlUrl; }
+
+    public boolean isHasWiki() { return hasWiki; }
+    public void setHasWiki(boolean hasWiki) { this.hasWiki = hasWiki; }
+
+    public Object getLicense() { return license; }
+    public void setLicense(Object license) { this.license = license; }
 }

@@ -49,6 +49,7 @@ function LoginSuccess() {
   const username = urlParams.get('username');
   if (username) {
     localStorage.setItem('git_analyzer_session', username);
+    localStorage.removeItem('git_analyzer_current_user');
     return <Navigate to="/overview" replace state={{ username }} />;
   }
   return <Navigate to="/login" replace />;
