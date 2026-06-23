@@ -7,6 +7,7 @@ A premium, full-stack diagnostics and analytics dashboard for GitHub profiles. B
 ## ✨ Features
 
 *   **🔒 Secure GitHub Sign-In:** Authenticate seamlessly using GitHub OAuth2 protocols.
+*   **💡 Smart Developer Suggestions:** Rule-based recommendation engine offering actionable profile, repository, and activity heuristics.
 *   **📈 Visual Analytics:** Render language distributions (custom Recharts Pie charts) and repository metrics.
 *   **🌱 Developer Milestones:** Easily view oldest, newest, and recently updated project metadata.
 *   **📋 Interactive Repository Grid:** Filter, sort (by name, language, stars, and forks), and paginate repository listings.
@@ -52,7 +53,8 @@ sequenceDiagram
 2. The local Vite dev server proxies `/api` requests same-origin to the Spring Boot backend (`http://localhost:8080/api`), preventing CORS blockages.
 3. The backend’s `GitHubService` performs asynchronous network calls to GitHub's REST API (`https://api.github.com/users/{username}`) to grab user metadata, and recursively paginates through `/users/{username}/repos` to fetch all public repositories.
 4. The backend filters out fork details, sums up stargazers and forks counts, compares creation dates to determine oldest/newest projects, sorts repositories by stars to find top repositories, and maps programming language distribution counts.
-5. The computed metrics are packaged into an `AnalysisResult` data structure and returned as a JSON payload.
+5. A dedicated `SuggestionService` evaluates the data and generates rule-based recommendations for improving profile completeness, repository documentation, and activity engagement.
+6. The computed metrics are packaged into an `AnalysisResult` data structure and returned as a JSON payload, while suggestions are fetched via a dedicated endpoint.
 
 ### 3. Data Representation & Reporting
 1. The frontend parses the `AnalysisResult` and feeds the language count array to a responsive `Recharts` SVG pie chart.
