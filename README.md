@@ -1,6 +1,238 @@
-# 📊 GitHub User Analyzer
+# 📊 GitHub Analyzer
 
-A premium, full-stack diagnostics and analytics dashboard for GitHub profiles. Built with a high-performance **Spring Boot** API gateway and a responsive, glassmorphic **React + Vite** single-page routed frontend.
+> A premium, full-stack developer analytics dashboard for GitHub profiles — built with **Spring Boot** and **React + Vite**.
+
+GitHub Analyzer lets you sign in with your GitHub account and instantly explore deep insights about any public GitHub profile: repository breakdowns, language distributions, activity timelines, developer achievements, profile comparisons, and PDF report exports — all in one beautiful, glassmorphic dashboard.
+
+---
+
+## 🖼️ Screenshots
+
+| Overview | Repositories |
+|----------|-------------|
+| ![Overview](screenshots/overview_page.png) | ![Repositories](screenshots/repositories_page.png) |
+
+| Languages | Activity |
+|-----------|----------|
+| ![Languages](screenshots/languages_page.png) | ![Activity](screenshots/activity_page.png) |
+
+| Search | Compare |
+|--------|---------|
+| ![Search](screenshots/search_page.png) | ![Compare](screenshots/compare_page.png) |
+
+| Achievements | Export |
+|-------------|--------|
+| ![Achievements](screenshots/achievements_page.png) | ![Export](screenshots/export_page.png) |
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔒 **GitHub OAuth2 Login** | Secure, one-click sign in using GitHub OAuth — no passwords needed |
+| 📊 **Developer Overview** | Profile stats, total repos/stars/forks, language pie chart, top repos, and smart recommendations |
+| 🗂️ **Repository Browser** | Sortable, filterable, paginated grid of all public repositories |
+| 🌐 **Language Analytics** | Breakdown of programming languages across all repositories with interactive charts |
+| 📅 **Activity Timeline** | Visual commit history and GitHub event activity feed |
+| 🔍 **Profile Search** | Search and instantly preview any public GitHub user's stats |
+| ⚖️ **Profile Comparison** | Side-by-side comparison of two GitHub developer profiles |
+| 🏆 **Achievements** | Gamified badge system (Bronze, Silver, Gold, Platinum) based on GitHub activity milestones |
+| 📄 **PDF Export** | Download a beautifully-rendered developer summary report as a PDF |
+| 🌓 **Dark / Light Mode** | Seamless theme toggle with glassmorphic design |
+
+---
+
+## ⚙️ How It Works (Architecture & Data Flow)
+
+The application operates as a decoupled client-server system communicating over REST endpoints with Vite proxy forwarding.
+
+```mermaid
+sequenceDiagram
+    participant User as Browser / Frontend (5173)
+    participant Server as Spring Boot Backend (8080)
+    participant GitHub as GitHub API
+    
+    User->>Server: Click "Sign in with GitHub" (/oauth2/authorization/github)
+    Server->>GitHub: Redirect to GitHub Authorization Page
+    GitHub-->>Server: Callback with Auth Code (/login/oauth2/code/github)
+    Server-->>User: Redirect to Frontend success route (/login-success?username={login})
+    Note over User: Saves username to localStorage
+    
+    User->>Server: Request Diagnostics /api/github/analytics/{username} (Proxied)
+    Server->>GitHub: Fetch Profile stats (/users/{username})
+    Server->>GitHub: Fetch Repositories list (/users/{username}/repos)
+    Note over Server: Calculates total stars, avg forks,<br/>newest/oldest repo, & language counts
+    Server-->>User: Returns serialized AnalysisResult JSON
+    Note over User: Renders charts & interactive data tables
+```
+
+### 1. The OAuth2 Authentication Pipeline
+1. The user visits the frontend at `http://localhost:5173/` and clicks **Continue with GitHub**.
+2. The browser is directed to `http://localhost:8080/oauth2/authorization/github`, triggering Spring Security's OAuth2 workflow.
+3. Upon authorization, GitHub redirects back to the backend callback (`/login/oauth2/code/github`) with an auth code.
+4. The backend exchanges the code for an access token and the `OAuth2LoginSuccessHandler` redirects to: `http://localhost:5173/login-success?username={login}`.
+5. The frontend saves the session to `localStorage` and routes to the Overview dashboard.
+
+### 2. The Diagnostics & Analytics Engine
+1. The frontend calls `/api/github/analytics/{username}` (proxied to the backend via Vite).
+2. The backend's `GitHubService` fetches user metadata and paginates through all public repositories.
+3. It computes: total stars, forks, language counts, oldest/newest repos, and top repos.
+4. A `SuggestionService` generates rule-based profile improvement recommendations.
+5. Results are returned as an `AnalysisResult` JSON payload.
+
+### 3. Data Representation & Reporting
+1. Language counts are rendered in a responsive `Recharts` SVG pie chart.
+2. Repositories are displayed in a client-side sortable, filterable, paginated table.
+3. The PDF export uses `html2canvas` + `jsPDF` to capture the dashboard and generate a downloadable report.
+
+---
+
+## 📂 Project Structure
+
+```text
+Github-analyzer/
+├── backend/
+│   ├── src/main/java/com/githubanalyzer/backend/
+│   │   ├── config/          # Spring Security and OAuth2 configurations
+│   │   ├── controller/      # REST API controllers (GitHub statistics)
+│   │   ├── dto/             # API data transfer objects
+│   │   ├── model/           # Diagnostic schemas
+│   │   ├── service/         # GitHub API & suggestion logic
+│   │   └── BackendApplication.java
+│   └── pom.xml              # Maven dependencies & build config
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # Sidebar, Header, Logo, DarkModeToggle
+│   │   ├── pages/           # Overview, Repositories, Languages, Activity,
+│   │   │                    # Search, Compare, Achievements, Export
+│   │   ├── App.jsx          # Main Router, protected session guard & login
+│   │   ├── App.css          # Theme variables & glassmorphic layouts
+│   │   └── main.jsx         # App mounting point
+│   ├── package.json
+│   └── vite.config.js       # Vite config with local API proxy
+│
+├── screenshots/             # App screenshots for this README
+├── start_backend.bat        # One-click backend launcher (Windows)
+├── run_maven_build.bat      # Maven build helper script
+└── set_token.bat            # Helper to create .env credentials file
+```
+
+---
+
+## 🛠️ Prerequisites
+
+Before running the application, make sure you have:
+
+| Tool | Version | Download |
+|------|---------|----------|
+| Java JDK | 17 or newer | [adoptium.net](https://adoptium.net) |
+| Node.js | 18.0.0 or newer | [nodejs.org](https://nodejs.org) |
+
+---
+
+## ⚙️ Configuration & Setup
+
+### 1. Register GitHub OAuth App
+To enable the **Continue with GitHub** login, register an OAuth application on GitHub:
+1. Go to **Settings → Developer Settings → OAuth Apps → New OAuth App**
+2. Fill in the fields:
+   - **Application name:** `GitHub Analyzer`
+   - **Homepage URL:** `http://localhost:5173`
+   - **Authorization callback URL:** `http://localhost:8080/login/oauth2/code/github`
+3. Click **Register application** and copy your **Client ID** and **Client Secret**
+
+### 2. Configure Backend Credentials
+Open `backend/src/main/resources/application.properties` and update:
+```properties
+spring.security.oauth2.client.registration.github.client-id=YOUR_CLIENT_ID
+spring.security.oauth2.client.registration.github.client-secret=YOUR_CLIENT_SECRET
+```
+
+> **Tip:** You can also run `set_token.bat` to interactively create a `.env` file with your credentials instead.
+
+---
+
+## 🚀 How to Run
+
+You need **two terminal windows** open simultaneously.
+
+### Terminal 1 — Start the Backend (Port 8080)
+
+Open a terminal in the **project root directory** and run:
+
+```powershell
+.\start_backend.bat
+```
+
+This script automatically:
+- Frees port 8080 if it's already in use
+- Loads credentials from `.env` if present
+- Builds the Spring Boot JAR (first run only, using bundled Maven)
+- Starts the server at `http://localhost:8080`
+
+✅ Wait for this message: `Started BackendApplication in X.XXX seconds`
+
+---
+
+### Terminal 2 — Start the Frontend (Port 5173)
+
+Open a second terminal, navigate to the `frontend` folder, and run:
+
+```powershell
+cd frontend
+npm install     # Only needed on the first run
+npm run dev
+```
+
+✅ Wait for: `Local: http://localhost:5173/`
+
+---
+
+### Open the App
+
+Open your browser and navigate to:
+```
+http://localhost:5173
+```
+
+Click **"Continue with GitHub"** to sign in and start exploring your developer analytics! 🎉
+
+---
+
+## 💻 Tech Stack
+
+### Backend
+| Technology | Purpose |
+|-----------|---------|
+| Java 17 | Core language |
+| Spring Boot 3.2 | Web framework |
+| Spring Security | Authentication & authorization |
+| Spring OAuth2 Client | GitHub OAuth2 integration |
+| Gson | JSON serialization |
+
+### Frontend
+| Technology | Purpose |
+|-----------|---------|
+| React 19 | UI framework |
+| Vite 8 | Build tool & dev server with API proxy |
+| React Router 7 | Client-side routing |
+| Recharts 3 | Interactive SVG charts |
+| jsPDF + html2canvas | PDF report generation |
+| Vanilla CSS | Styling with CSS custom properties |
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
